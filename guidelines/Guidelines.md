@@ -1,6 +1,15 @@
-**Add your own guidelines here**
-<!--
+# UI/UX Design & Collaboration Guidelines (Figma) by sandra
 
+> **Purpose**: Establish clear, consistent standards for interface design, UX improvements, and developer handoff in this collaborative project using Figma.
+
+## 1. Core Design Principles
+- **User-Centered**: Every screen, flow, or interaction must address a real user need or improve a measurable metric.
+- **Consistency Over Novelty**: Reuse established components and patterns. Document exceptions with clear rationale.
+- **Clarity & Hierarchy**: Prioritize scannability, logical grouping, and progressive disclosure. Remove decorative clutter.
+- **Progressive Enhancement**: Core flows work across all viewports/devices; advanced interactions layer on gracefully.
+
+## 2. Figma File Architecture & Organization
+Use a consistent page/section structure across all Figma files:
 System Guidelines
 
 Use this file to provide the AI with rules and guidelines you want it to follow.
