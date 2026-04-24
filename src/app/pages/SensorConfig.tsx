@@ -6,6 +6,9 @@ import { Button } from "../components/ui/button";
 import { Switch } from "../components/ui/switch";
 import { Separator } from "../components/ui/separator";
 import { Badge } from "../components/ui/badge";
+import { useAuth } from "../components/AuthProvider";
+import { supabase, DbSensor, DbZone, SensorType, SensorStatus } from "../../lib/supabase";
+import { getOrCreateDefaultFarm } from "../../lib/farmUtils";
 import {
   Wifi,
   WifiOff,
@@ -26,72 +29,38 @@ import {
   CheckCircle2,
   AlertCircle,
   Radio,
+  Loader2,
 } from "lucide-react";
-
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-type SensorType = "soil_moisture" | "temperature" | "humidity" | "light" | "wind_speed" | "rainfall";
-type SensorStatus = "online" | "offline" | "warning";
-
-interface Sensor {
-  id: string;
-  name: string;
-  type: SensorType;
-  zone: string;
-  deviceId: string;
-  samplingRate: number; // seconds
-  minThreshold: number;
-  maxThreshold: number;
-  enabled: boolean;
-  status: SensorStatus;
-  lastValue: number;
-  unit: string;
-  lastSeen: Date;
-}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const SENSOR_META: Record<SensorType, { icon: React.ElementType; color: string; label: string; defaultUnit: string; min: number; max: number }> = {
-  soil_moisture: { icon: Droplets,    color: "text-blue-600",   label: "Soil Moisture", defaultUnit: "%",    min: 0,  max: 100 },
-  temperature:   { icon: Thermometer, color: "text-orange-500", label: "Temperature",   defaultUnit: "°C",   min: -10, max: 60 },
-  humidity:      { icon: Wind,        color: "text-sky-500",    label: "Humidity",      defaultUnit: "%",    min: 0,  max: 100 },
-  light:         { icon: Sun,         color: "text-yellow-500", label: "Light",         defaultUnit: "lux",  min: 0,  max: 100000 },
-  wind_speed:    { icon: Activity,    color: "text-teal-500",   label: "Wind Speed",    defaultUnit: "km/h", min: 0,  max: 120 },
-  rainfall:      { icon: Zap,         color: "text-indigo-500", label: "Rainfall",      defaultUnit: "mm",   min: 0,  max: 500 },
+const SENSOR_META: Record<string, { icon: React.ElementType; color: string; label: string; defaultUnit: string; min: number; max: number }> = {
+  SOIL_MOISTURE: { icon: Droplets,    color: "text-blue-600",   label: "Soil Moisture", defaultUnit: "%",    min: 0,  max: 100 },
+  TEMPERATURE:   { icon: Thermometer, color: "text-orange-500", label: "Temperature",   defaultUnit: "°C",   min: -10, max: 60 },
+  HUMIDITY:      { icon: Wind,        color: "text-sky-500",    label: "Humidity",      defaultUnit: "%",    min: 0,  max: 100 },
+  LIGHT:         { icon: Sun,         color: "text-yellow-500", label: "Light",         defaultUnit: "lux",  min: 0,  max: 100000 },
+  WIND_SPEED:    { icon: Activity,    color: "text-teal-500",   label: "Wind Speed",    defaultUnit: "km/h", min: 0,  max: 120 },
+  RAINFALL:      { icon: Zap,         color: "text-indigo-500", label: "Rainfall",      defaultUnit: "mm",   min: 0,  max: 500 },
 };
 
-const ZONES = ["Zone A – North Field", "Zone B – South Field", "Zone C – Greenhouse", "Zone D – Orchard", "Zone E – Nursery"];
-
 function genId() {
-  return "SNS-" + Math.random().toString(36).substring(2, 8).toUpperCase();
+  return "DEV-" + Math.random().toString(36).substring(2, 8).toUpperCase();
 }
 
 function randomBetween(min: number, max: number) {
   return parseFloat((Math.random() * (max - min) + min).toFixed(1));
 }
 
-function simulateValue(sensor: Sensor): number {
-  const { min, max } = SENSOR_META[sensor.type];
-  const spread = (max - min) * 0.08;
-  const next = sensor.lastValue + randomBetween(-spread, spread);
-  return parseFloat(Math.min(max, Math.max(min, next)).toFixed(1));
+// Visual simulation state
+interface VisualSensor extends DbSensor {
+  lastValue: number;
 }
-
-const DEFAULT_SENSORS: Sensor[] = [
-  { id: "SNS-A1B2C3", name: "North Field Moisture 1", type: "soil_moisture", zone: "Zone A – North Field", deviceId: "DEV-001", samplingRate: 5, minThreshold: 25, maxThreshold: 80, enabled: true,  status: "online",  lastValue: 38,   unit: "%",    lastSeen: new Date() },
-  { id: "SNS-D4E5F6", name: "Greenhouse Temp 1",       type: "temperature",   zone: "Zone C – Greenhouse",  deviceId: "DEV-002", samplingRate: 10, minThreshold: 15, maxThreshold: 38, enabled: true,  status: "online",  lastValue: 27.4, unit: "°C",   lastSeen: new Date() },
-  { id: "SNS-G7H8I9", name: "South Field Humidity 1",  type: "humidity",      zone: "Zone B – South Field", deviceId: "DEV-003", samplingRate: 10, minThreshold: 40, maxThreshold: 85, enabled: true,  status: "warning", lastValue: 89,   unit: "%",    lastSeen: new Date() },
-  { id: "SNS-J0K1L2", name: "Orchard Light Sensor",    type: "light",         zone: "Zone D – Orchard",     deviceId: "DEV-004", samplingRate: 15, minThreshold: 2000, maxThreshold: 80000, enabled: true, status: "online", lastValue: 42300, unit: "lux", lastSeen: new Date() },
-  { id: "SNS-M3N4O5", name: "Wind Speed Station",      type: "wind_speed",    zone: "Zone A – North Field", deviceId: "DEV-005", samplingRate: 5, minThreshold: 0,  maxThreshold: 60, enabled: false, status: "offline", lastValue: 14.2, unit: "km/h", lastSeen: new Date() },
-  { id: "SNS-P6Q7R8", name: "Rainfall Gauge",          type: "rainfall",      zone: "Zone B – South Field", deviceId: "DEV-006", samplingRate: 60, minThreshold: 0, maxThreshold: 200, enabled: true, status: "online",  lastValue: 3.2,  unit: "mm",   lastSeen: new Date() },
-];
 
 // ─── Empty form state ─────────────────────────────────────────────────────────
 
 const EMPTY_FORM = {
   name: "",
-  type: "soil_moisture" as SensorType,
-  zone: ZONES[0],
+  type: "SOIL_MOISTURE" as SensorType,
   deviceId: "",
   samplingRate: 10,
   minThreshold: 20,
@@ -101,16 +70,54 @@ const EMPTY_FORM = {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function SensorConfig() {
-  const [sensors, setSensors] = useState<Sensor[]>(DEFAULT_SENSORS);
+  const { user } = useAuth();
+  const [sensors, setSensors] = useState<VisualSensor[]>([]);
+  const [zone, setZone] = useState<DbZone | null>(null);
+  const [loading, setLoading] = useState(true);
+
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [liveLog, setLiveLog] = useState<{ id: string; sensorName: string; value: number; unit: string; time: string; status: "ok" | "warn" }[]>([]);
   const [isStreaming, setIsStreaming] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+
   const logRef = useRef<HTMLDivElement>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Real-time simulation tick
+  // Initialize DB Data
+  useEffect(() => {
+    if (!user) return;
+    async function loadData() {
+      const data = await getOrCreateDefaultFarm(user!.id);
+      if (data) {
+        setZone(data.zone);
+        await fetchSensors(data.zone.id);
+      }
+      setLoading(false);
+    }
+    loadData();
+  }, [user]);
+
+  async function fetchSensors(zoneId: string) {
+    const { data, error } = await supabase.from("Sensor").select("*").eq("zoneId", zoneId);
+    if (error) {
+      console.error("Error fetching sensors:", error);
+      return;
+    }
+    
+    // Attach a random initial simulated value to each
+    const visualSensors = (data as DbSensor[]).map(s => {
+      const meta = SENSOR_META[s.type];
+      return {
+        ...s,
+        lastValue: randomBetween(s.minThreshold, s.maxThreshold)
+      };
+    });
+    setSensors(visualSensors);
+  }
+
+  // Real-time visual simulation tick (frontend only)
   useEffect(() => {
     if (!isStreaming) {
       if (tickRef.current) clearInterval(tickRef.current);
@@ -119,14 +126,18 @@ export function SensorConfig() {
     tickRef.current = setInterval(() => {
       setSensors((prev) =>
         prev.map((s) => {
-          if (!s.enabled || s.status === "offline") return s;
-          const next = simulateValue(s);
+          if (!s.enabled || s.status === "OFFLINE") return s;
+          const { min, max } = SENSOR_META[s.type];
+          const spread = (max - min) * 0.08;
+          let next = s.lastValue + randomBetween(-spread, spread);
+          next = parseFloat(Math.min(max, Math.max(min, next)).toFixed(1));
           const isWarn = next < s.minThreshold || next > s.maxThreshold;
+          
           return {
             ...s,
             lastValue: next,
-            status: isWarn ? "warning" : "online",
-            lastSeen: new Date(),
+            status: isWarn ? "WARNING" : "ONLINE",
+            lastSeen: new Date().toISOString(),
           };
         })
       );
@@ -142,7 +153,7 @@ export function SensorConfig() {
     if (!isStreaming) return;
     setSensors((current) => {
       const entry = current
-        .filter((s) => s.enabled && s.status !== "offline")
+        .filter((s) => s.enabled && s.status !== "OFFLINE")
         .slice(0, 1)
         .map((s) => ({
           id: Math.random().toString(36).slice(2),
@@ -150,7 +161,7 @@ export function SensorConfig() {
           value: s.lastValue,
           unit: s.unit,
           time: new Date().toLocaleTimeString(),
-          status: (s.status === "warning" ? "warn" : "ok") as "ok" | "warn",
+          status: (s.status === "WARNING" ? "warn" : "ok") as "ok" | "warn",
         }));
       if (entry.length) {
         setLiveLog((prev) => [entry[0], ...prev].slice(0, 40));
@@ -166,72 +177,118 @@ export function SensorConfig() {
 
   // ── CRUD ──────────────────────────────────────────────────────────────────
 
-  function handleAddSensor() {
+  async function handleAddSensor() {
+    if (!zone) return;
+    setActionLoading(true);
     const meta = SENSOR_META[form.type];
-    const newSensor: Sensor = {
-      id: genId(),
+    
+    const { data, error } = await supabase.from("Sensor").insert([{
       name: form.name || `${meta.label} Sensor`,
       type: form.type,
-      zone: form.zone,
+      zoneId: zone.id,
       deviceId: form.deviceId || genId(),
       samplingRate: form.samplingRate,
       minThreshold: form.minThreshold,
       maxThreshold: form.maxThreshold,
       enabled: true,
-      status: "online",
-      lastValue: randomBetween(form.minThreshold, form.maxThreshold),
-      unit: meta.defaultUnit,
-      lastSeen: new Date(),
+      status: "ONLINE",
+      unit: meta.defaultUnit
+    }]).select().single();
+
+    if (error) {
+      console.error("Error adding sensor:", error);
+    } else {
+      const newSensor = data as DbSensor;
+      setSensors((prev) => [...prev, { ...newSensor, lastValue: randomBetween(newSensor.minThreshold, newSensor.maxThreshold) }]);
+      setShowAddForm(false);
+      setForm({ ...EMPTY_FORM });
+    }
+    setActionLoading(false);
+  }
+
+  async function handleUpdateSensor() {
+    if (!editingId) return;
+    setActionLoading(true);
+    
+    const meta = SENSOR_META[form.type];
+    const updates = {
+      name: form.name,
+      type: form.type,
+      deviceId: form.deviceId,
+      samplingRate: form.samplingRate,
+      minThreshold: form.minThreshold,
+      maxThreshold: form.maxThreshold,
+      unit: meta.defaultUnit
     };
-    setSensors((prev) => [...prev, newSensor]);
-    setShowAddForm(false);
-    setForm({ ...EMPTY_FORM });
+
+    const { error } = await supabase.from("Sensor").update(updates).eq("id", editingId);
+
+    if (error) {
+      console.error("Error updating sensor:", error);
+    } else {
+      setSensors((prev) =>
+        prev.map((s) => s.id === editingId ? { ...s, ...updates } : s)
+      );
+      setEditingId(null);
+      setShowAddForm(false);
+    }
+    setActionLoading(false);
   }
 
-  function handleUpdateSensor() {
+  async function handleDelete(id: string) {
+    const { error } = await supabase.from("Sensor").delete().eq("id", id);
+    if (error) {
+      console.error("Error deleting sensor:", error);
+    } else {
+      setSensors((prev) => prev.filter((s) => s.id !== id));
+    }
+  }
+
+  async function handleToggle(id: string, currentEnabled: boolean) {
+    const newEnabled = !currentEnabled;
+    const newStatus = newEnabled ? "ONLINE" : "OFFLINE";
+
+    // Optimistic update
     setSensors((prev) =>
-      prev.map((s) =>
-        s.id === editingId
-          ? { ...s, ...form, unit: SENSOR_META[form.type].defaultUnit }
-          : s
-      )
+      prev.map((s) => s.id === id ? { ...s, enabled: newEnabled, status: newStatus } : s)
     );
-    setEditingId(null);
+
+    const { error } = await supabase.from("Sensor").update({ 
+      enabled: newEnabled, 
+      status: newStatus 
+    }).eq("id", id);
+
+    if (error) {
+      console.error("Error toggling sensor:", error);
+      // Revert on error
+      setSensors((prev) =>
+        prev.map((s) => s.id === id ? { ...s, enabled: currentEnabled, status: currentEnabled ? "ONLINE" : "OFFLINE" } : s)
+      );
+    }
   }
 
-  function handleDelete(id: string) {
-    setSensors((prev) => prev.filter((s) => s.id !== id));
-  }
-
-  function handleToggle(id: string) {
-    setSensors((prev) =>
-      prev.map((s) =>
-        s.id === id
-          ? { ...s, enabled: !s.enabled, status: s.enabled ? "offline" : "online" }
-          : s
-      )
-    );
-  }
-
-  function startEdit(sensor: Sensor) {
+  function startEdit(sensor: VisualSensor) {
     setEditingId(sensor.id);
     setForm({
       name: sensor.name,
       type: sensor.type,
-      zone: sensor.zone,
       deviceId: sensor.deviceId,
       samplingRate: sensor.samplingRate,
       minThreshold: sensor.minThreshold,
       maxThreshold: sensor.maxThreshold,
     });
-    setShowAddForm(false);
+    setShowAddForm(true);
   }
 
   // ── Stats ─────────────────────────────────────────────────────────────────
 
-  const online  = sensors.filter((s) => s.status === "online").length;
-  const warning = sensors.filter((s) => s.status === "warning").length;
-  const offline = sensors.filter((s) => s.status === "offline").length;
+  const online  = sensors.filter((s) => s.status === "ONLINE").length;
+  const warning = sensors.filter((s) => s.status === "WARNING").length;
+  const offline = sensors.filter((s) => s.status === "OFFLINE").length;
+
+  if (loading) {
+    return <div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+  }
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -327,14 +384,12 @@ export function SensorConfig() {
 
               <div className="space-y-1.5">
                 <Label htmlFor="sensorZone">Farm Zone</Label>
-                <select
+                <Input
                   id="sensorZone"
-                  className="w-full px-3 py-2 border rounded-lg bg-white text-sm"
-                  value={form.zone}
-                  onChange={(e) => setForm({ ...form, zone: e.target.value })}
-                >
-                  {ZONES.map((z) => <option key={z}>{z}</option>)}
-                </select>
+                  value={zone?.name || ""}
+                  disabled
+                  className="bg-gray-50"
+                />
               </div>
 
               <div className="space-y-1.5">
@@ -381,11 +436,12 @@ export function SensorConfig() {
               <Button
                 variant="outline"
                 onClick={() => { setShowAddForm(false); setEditingId(null); }}
+                disabled={actionLoading}
               >
                 <X className="w-4 h-4 mr-2" /> Cancel
               </Button>
-              <Button onClick={editingId ? handleUpdateSensor : handleAddSensor}>
-                <Save className="w-4 h-4 mr-2" />
+              <Button onClick={editingId ? handleUpdateSensor : handleAddSensor} disabled={actionLoading}>
+                {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
                 {editingId ? "Save Changes" : "Register Sensor"}
               </Button>
             </div>
@@ -400,22 +456,23 @@ export function SensorConfig() {
         <div className="xl:col-span-2 space-y-4">
           {sensors.map((sensor) => {
             const meta = SENSOR_META[sensor.type];
-            const Icon = meta.icon;
+            const Icon = meta?.icon || Radio;
             const isEditing = editingId === sensor.id;
             const pct = (() => {
-              const { min, max } = SENSOR_META[sensor.type];
+              if(!meta) return 0;
+              const { min, max } = meta;
               return Math.round(((sensor.lastValue - min) / (max - min)) * 100);
             })();
             const barColor =
-              sensor.status === "warning" ? "bg-yellow-400" :
-              sensor.status === "offline" ? "bg-gray-300" : "bg-green-500";
+              sensor.status === "WARNING" ? "bg-yellow-400" :
+              sensor.status === "OFFLINE" ? "bg-gray-300" : "bg-green-500";
 
             return (
               <Card
                 key={sensor.id}
                 className={`transition-all border-l-4 ${
-                  sensor.status === "online"  ? "border-l-green-500" :
-                  sensor.status === "warning" ? "border-l-yellow-400" :
+                  sensor.status === "ONLINE"  ? "border-l-green-500" :
+                  sensor.status === "WARNING" ? "border-l-yellow-400" :
                                                 "border-l-gray-300"
                 } ${isEditing ? "ring-2 ring-primary" : ""}`}
               >
@@ -423,9 +480,9 @@ export function SensorConfig() {
                   <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     {/* Icon + Value */}
                     <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      sensor.status === "offline" ? "bg-gray-100" : "bg-green-50"
+                      sensor.status === "OFFLINE" ? "bg-gray-100" : "bg-green-50"
                     }`}>
-                      <Icon className={`w-7 h-7 ${sensor.status === "offline" ? "text-gray-400" : meta.color}`} />
+                      <Icon className={`w-7 h-7 ${sensor.status === "OFFLINE" ? "text-gray-400" : meta?.color || "text-gray-500"}`} />
                     </div>
 
                     {/* Details */}
@@ -434,22 +491,22 @@ export function SensorConfig() {
                         <div>
                           <h3 className="font-semibold text-gray-900 truncate">{sensor.name}</h3>
                           <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                            <MapPin className="w-3 h-3" /> {sensor.zone}
+                            <MapPin className="w-3 h-3" /> {zone?.name || "Unknown Zone"}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge
-                            variant={sensor.status === "online" ? "default" : sensor.status === "warning" ? "secondary" : "outline"}
+                            variant={sensor.status === "ONLINE" ? "default" : sensor.status === "WARNING" ? "secondary" : "outline"}
                             className={`text-xs ${
-                              sensor.status === "online"  ? "bg-green-100 text-green-700 border-green-200" :
-                              sensor.status === "warning" ? "bg-yellow-100 text-yellow-700 border-yellow-200" :
+                              sensor.status === "ONLINE"  ? "bg-green-100 text-green-700 border-green-200" :
+                              sensor.status === "WARNING" ? "bg-yellow-100 text-yellow-700 border-yellow-200" :
                                                             "bg-gray-100 text-gray-500"
                             }`}
                           >
-                            {sensor.status === "online"  ? <Wifi    className="w-3 h-3 mr-1" /> :
-                             sensor.status === "warning" ? <AlertCircle className="w-3 h-3 mr-1" /> :
+                            {sensor.status === "ONLINE"  ? <Wifi    className="w-3 h-3 mr-1" /> :
+                             sensor.status === "WARNING" ? <AlertCircle className="w-3 h-3 mr-1" /> :
                                                            <WifiOff className="w-3 h-3 mr-1" />}
-                            {sensor.status.charAt(0).toUpperCase() + sensor.status.slice(1)}
+                            {sensor.status.charAt(0).toUpperCase() + sensor.status.slice(1).toLowerCase()}
                           </Badge>
                         </div>
                       </div>
@@ -457,7 +514,7 @@ export function SensorConfig() {
                       {/* Progress bar */}
                       <div className="mt-3">
                         <div className="flex justify-between text-xs text-gray-500 mb-1">
-                          <span>Current: <span className={`font-semibold ${meta.color}`}>{sensor.lastValue} {sensor.unit}</span></span>
+                          <span>Current: <span className={`font-semibold ${meta?.color || ""}`}>{sensor.lastValue} {sensor.unit}</span></span>
                           <span>Threshold: {sensor.minThreshold}–{sensor.maxThreshold} {sensor.unit}</span>
                         </div>
                         <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -471,8 +528,8 @@ export function SensorConfig() {
                       {/* Meta row */}
                       <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
                         <span className="flex items-center gap-1"><RefreshCw className="w-3 h-3" /> Every {sensor.samplingRate}s</span>
-                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {sensor.lastSeen.toLocaleTimeString()}</span>
-                        <span className="font-mono">{sensor.id}</span>
+                        <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(sensor.lastSeen).toLocaleTimeString()}</span>
+                        <span className="font-mono">{sensor.deviceId}</span>
                       </div>
                     </div>
 
@@ -480,7 +537,7 @@ export function SensorConfig() {
                     <div className="flex sm:flex-col items-center gap-2 flex-shrink-0">
                       <Switch
                         checked={sensor.enabled}
-                        onCheckedChange={() => handleToggle(sensor.id)}
+                        onCheckedChange={() => handleToggle(sensor.id, sensor.enabled)}
                         aria-label="Toggle sensor"
                       />
                       <button
@@ -574,11 +631,10 @@ export function SensorConfig() {
             </CardHeader>
             <CardContent className="space-y-3">
               {[
+                { name: "Supabase Realtime",status: "Connected",    color: "text-green-600", dot: "bg-green-500" },
                 { name: "MQTT Broker",      status: "Connected",    color: "text-green-600", dot: "bg-green-500" },
-                { name: "WebSocket",         status: "Active",       color: "text-green-600", dot: "bg-green-500" },
                 { name: "LoRaWAN Gateway",  status: "Connected",    color: "text-green-600", dot: "bg-green-500" },
                 { name: "REST API Bridge",  status: "Idle",         color: "text-yellow-600", dot: "bg-yellow-400" },
-                { name: "Zigbee Network",   status: "Scanning…",    color: "text-blue-600",   dot: "bg-blue-400 animate-pulse" },
               ].map(({ name, status, color, dot }) => (
                 <div key={name} className="flex items-center justify-between text-xs">
                   <span className="text-gray-600">{name}</span>

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
 import { Button } from "./ui/button";
+import { useAuth } from "./AuthProvider";
 import {
   Sprout,
   LayoutDashboard,
@@ -18,6 +19,13 @@ export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, loading, signOut } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      navigate("/");
+    }
+  }, [user, loading, navigate]);
 
   const navItems = [
     { path: "/app",         icon: LayoutDashboard, label: "Dashboard" },
@@ -34,9 +42,18 @@ export function Layout() {
     return location.pathname.startsWith(path);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await signOut();
     navigate("/");
   };
+
+  if (loading) {
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!user) {
+    return null; // Will redirect in useEffect
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -99,9 +116,11 @@ export function Layout() {
               <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                 <User className="w-5 h-5 text-gray-600" />
               </div>
-              <div className="flex-1">
-                <div className="font-medium text-sm">John Farmer</div>
-                <div className="text-xs text-gray-500">farmer@example.com</div>
+              <div className="flex-1 overflow-hidden">
+                <div className="font-medium text-sm truncate">
+                  {user?.user_metadata?.name || "Farmer"}
+                </div>
+                <div className="text-xs text-gray-500 truncate">{user?.email}</div>
               </div>
             </div>
             <Button
@@ -173,9 +192,11 @@ export function Layout() {
               <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                 <User className="w-5 h-5 text-gray-600" />
               </div>
-              <div className="flex-1">
-                <div className="font-medium text-sm">John Farmer</div>
-                <div className="text-xs text-gray-500">farmer@example.com</div>
+              <div className="flex-1 overflow-hidden">
+                <div className="font-medium text-sm truncate">
+                  {user?.user_metadata?.name || "Farmer"}
+                </div>
+                <div className="text-xs text-gray-500 truncate">{user?.email}</div>
               </div>
             </div>
             <Button
