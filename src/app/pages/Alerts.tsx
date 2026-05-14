@@ -1,270 +1,66 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
+import { useAuth } from "../components/AuthProvider";
+import { supabase } from "../../lib/supabase";
+import { getOrCreateDefaultFarm } from "../../lib/farmUtils";
 import {
   AlertTriangle,
   AlertCircle,
   CheckCircle,
   Droplets,
-  Bug,
   Cloud,
   Thermometer,
-  Sprout,
-  TrendingUp,
   X,
   ChevronDown,
   ChevronUp,
-  Wind,
-  Zap,
+  Loader2,
+  Bell
 } from "lucide-react";
 
-// Section icon images (generated custom icons)
+// Section icon images
 const SECTION_ICONS = {
   soil:        "/icons/icon_soil_moisture.png",
   pest:        "/icons/icon_pest_warnings.png",
   weather:     "/icons/icon_weather_alerts.png",
   temperature: "/icons/icon_temperature_alerts.png",
   growth:      "/icons/icon_growth_yield.png",
+  general:     "/icons/icon_growth_yield.png",
 } as const;
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
-type AlertStatus = "critical" | "warning" | "normal";
+type LocalAlertStatus = "critical" | "warning" | "normal";
 
-interface Alert {
+interface LocalAlert {
   id: string;
   title: string;
   message: string;
-  status: AlertStatus;
+  status: LocalAlertStatus;
   icon: React.ElementType;
   time: string;
   recommendation?: string;
+  dbStatus: string;
 }
 
 interface AlertSection {
   key: string;
   label: string;
-  sectionIcon: React.ElementType; // lucide fallback (unused on header)
-  imgSrc: string;                 // custom section image icon
+  sectionIcon: React.ElementType;
+  imgSrc: string;
   color: {
     header: string;
     iconBg: string;
     iconFg: string;
     dot: string;
   };
-  alerts: Alert[];
+  alerts: LocalAlert[];
 }
-
-// ── Data ───────────────────────────────────────────────────────────────────
-
-const SECTIONS: AlertSection[] = [
-  {
-    key: "soil",
-    label: "Soil Moisture",
-    sectionIcon: Droplets,
-    imgSrc: SECTION_ICONS.soil,
-    color: {
-      header: "bg-blue-50 border-blue-200",
-      iconBg:  "bg-blue-100",
-      iconFg:  "text-blue-600",
-      dot:     "bg-blue-500",
-    },
-    alerts: [
-      {
-        id: "soil-1",
-        title: "Irrigation Needed – Field A",
-        message: "Soil moisture level has dropped to 30% in Field A. Immediate irrigation is recommended.",
-        status: "critical",
-        icon: Droplets,
-        time: "10 minutes ago",
-        recommendation: "Start irrigation system for 2–3 hours to restore optimal moisture levels (45–50%).",
-      },
-      {
-        id: "soil-2",
-        title: "Moisture Declining – Field C",
-        message: "Soil moisture in Field C is trending downward (42%). Approaching the lower threshold.",
-        status: "warning",
-        icon: Droplets,
-        time: "45 minutes ago",
-        recommendation: "Schedule irrigation within the next 4 hours to prevent stress on crops.",
-      },
-      {
-        id: "soil-3",
-        title: "Field B Moisture Optimal",
-        message: "Field B is maintaining ideal soil moisture of 52%. No action required.",
-        status: "normal",
-        icon: Droplets,
-        time: "1 hour ago",
-      },
-    ],
-  },
-  {
-    key: "pest",
-    label: "Pest Warnings",
-    sectionIcon: Bug,
-    imgSrc: SECTION_ICONS.pest,
-    color: {
-      header: "bg-orange-50 border-orange-200",
-      iconBg:  "bg-orange-100",
-      iconFg:  "text-orange-600",
-      dot:     "bg-orange-500",
-    },
-    alerts: [
-      {
-        id: "pest-1",
-        title: "Aphid Risk – High",
-        message: "Current temperature (28°C) and humidity (65%) create favourable conditions for aphid infestation in the next 48 hours.",
-        status: "warning",
-        icon: Bug,
-        time: "1 hour ago",
-        recommendation: "Inspect crops for early signs of aphids. Consider applying organic neem-based spray as a preventive measure.",
-      },
-      {
-        id: "pest-2",
-        title: "Fungal Disease Risk",
-        message: "Prolonged leaf wetness detected. Risk of fungal diseases (powdery mildew) elevated in greenhouse.",
-        status: "warning",
-        icon: Bug,
-        time: "3 hours ago",
-        recommendation: "Improve ventilation in the greenhouse. Apply copper-based fungicide as a precaution.",
-      },
-      {
-        id: "pest-3",
-        title: "No Pest Activity Detected",
-        message: "Pest monitoring sensors report no abnormal activity across all zones.",
-        status: "normal",
-        icon: Bug,
-        time: "6 hours ago",
-      },
-    ],
-  },
-  {
-    key: "weather",
-    label: "Weather Alerts",
-    sectionIcon: Cloud,
-    imgSrc: SECTION_ICONS.weather,
-    color: {
-      header: "bg-sky-50 border-sky-200",
-      iconBg:  "bg-sky-100",
-      iconFg:  "text-sky-600",
-      dot:     "bg-sky-500",
-    },
-    alerts: [
-      {
-        id: "weather-1",
-        title: "Heavy Rainfall Forecast",
-        message: "Heavy rainfall expected in 24 hours. Precipitation: 25–35 mm.",
-        status: "warning",
-        icon: Cloud,
-        time: "2 hours ago",
-        recommendation: "Delay irrigation schedule. Ensure all drainage systems are clear of debris.",
-      },
-      {
-        id: "weather-2",
-        title: "Strong Wind Advisory",
-        message: "Wind gusts up to 55 km/h forecast for tomorrow afternoon.",
-        status: "warning",
-        icon: Wind,
-        time: "2 hours ago",
-        recommendation: "Secure greenhouse frames, nets, and any loose equipment on the farm.",
-      },
-      {
-        id: "weather-3",
-        title: "Clear Weather – Next 3 Days",
-        message: "No adverse weather expected for the next 72 hours. Ideal farming conditions.",
-        status: "normal",
-        icon: Cloud,
-        time: "4 hours ago",
-        recommendation: "Good window for pesticide application and field inspections.",
-      },
-    ],
-  },
-  {
-    key: "temperature",
-    label: "Temperature Alerts",
-    sectionIcon: Thermometer,
-    imgSrc: SECTION_ICONS.temperature,
-    color: {
-      header: "bg-red-50 border-red-200",
-      iconBg:  "bg-red-100",
-      iconFg:  "text-red-600",
-      dot:     "bg-red-500",
-    },
-    alerts: [
-      {
-        id: "temp-1",
-        title: "Extreme Heat Warning",
-        message: "Maximum temperature expected tomorrow: 38°C. Crop stress risk is high for sensitive varieties.",
-        status: "critical",
-        icon: Thermometer,
-        time: "3 hours ago",
-        recommendation: "Increase irrigation frequency. Consider shade cloth over tomatoes and leafy greens. Avoid fieldwork during peak hours (11 AM–3 PM).",
-      },
-      {
-        id: "temp-2",
-        title: "Night Temperature Drop",
-        message: "Overnight temperatures may fall to 10°C. Risk of cold stress for tropical crops.",
-        status: "warning",
-        icon: Thermometer,
-        time: "5 hours ago",
-        recommendation: "Cover sensitive seedlings. Consider using row covers or mulch to retain soil heat.",
-      },
-      {
-        id: "temp-3",
-        title: "Greenhouse Temperature Normal",
-        message: "Greenhouse temperature steady at 24°C — within optimal range for all current crops.",
-        status: "normal",
-        icon: Thermometer,
-        time: "30 minutes ago",
-      },
-    ],
-  },
-  {
-    key: "growth",
-    label: "Growth & Yield Updates",
-    sectionIcon: Sprout,
-    imgSrc: SECTION_ICONS.growth,
-    color: {
-      header: "bg-green-50 border-green-200",
-      iconBg:  "bg-green-100",
-      iconFg:  "text-green-600",
-      dot:     "bg-green-500",
-    },
-    alerts: [
-      {
-        id: "growth-1",
-        title: "Yield Prediction Updated",
-        message: "AI model predicts a 12% increase in wheat yield compared to last season based on current growth trends.",
-        status: "normal",
-        icon: TrendingUp,
-        time: "1 day ago",
-        recommendation: "Current practices are highly effective. Maintain your irrigation and fertilisation schedule.",
-      },
-      {
-        id: "growth-2",
-        title: "Nutrient Deficiency Detected",
-        message: "Leaf colour analysis indicates possible nitrogen deficiency in the north field.",
-        status: "warning",
-        icon: Zap,
-        time: "8 hours ago",
-        recommendation: "Apply nitrogen-rich fertiliser (e.g. urea) at recommended rates. Re-test soil in 7 days.",
-      },
-      {
-        id: "growth-3",
-        title: "Field B – Optimal Growth",
-        message: "Field B is showing excellent growth parameters. All metrics within the ideal range.",
-        status: "normal",
-        icon: Sprout,
-        time: "5 hours ago",
-      },
-    ],
-  },
-];
 
 // ── Style helpers ─────────────────────────────────────────────────────────
 
-function getAlertStyles(status: AlertStatus) {
+function getAlertStyles(status: LocalAlertStatus) {
   switch (status) {
     case "critical":
       return {
@@ -293,7 +89,7 @@ function getAlertStyles(status: AlertStatus) {
   }
 }
 
-function StatusIcon({ status }: { status: AlertStatus }) {
+function StatusIcon({ status }: { status: LocalAlertStatus }) {
   if (status === "critical") return <AlertTriangle className="w-4 h-4" />;
   if (status === "warning")  return <AlertCircle   className="w-4 h-4" />;
   return <CheckCircle className="w-4 h-4" />;
@@ -301,7 +97,7 @@ function StatusIcon({ status }: { status: AlertStatus }) {
 
 // ── Alert Card ─────────────────────────────────────────────────────────────
 
-function AlertCard({ alert, onDismiss }: { alert: Alert; onDismiss: (id: string) => void }) {
+function AlertCard({ alert, onDismiss }: { alert: LocalAlert; onDismiss: (id: string) => void }) {
   const styles = getAlertStyles(alert.status);
   const Icon = alert.icon;
 
@@ -349,13 +145,13 @@ function AlertCard({ alert, onDismiss }: { alert: Alert; onDismiss: (id: string)
 
 // ── Section ────────────────────────────────────────────────────────────────
 
-function AlertSection({
+function AlertSectionGroup({
   section,
   alerts,
   onDismiss,
 }: {
   section: AlertSection;
-  alerts: Alert[];
+  alerts: LocalAlert[];
   onDismiss: (id: string) => void;
 }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -363,15 +159,15 @@ function AlertSection({
   const criticalCount = alerts.filter((a) => a.status === "critical").length;
   const warningCount  = alerts.filter((a) => a.status === "warning").length;
 
+  if (alerts.length === 0) return null;
+
   return (
     <div className="space-y-3">
-      {/* Section Header */}
       <button
         onClick={() => setCollapsed((v) => !v)}
         className={`w-full flex items-center justify-between px-5 py-4 rounded-xl border ${section.color.header} hover:opacity-90 transition-opacity`}
       >
         <div className="flex items-center gap-3">
-          {/* Custom image icon */}
           <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 shadow-sm border border-white/60">
             <img
               src={section.imgSrc}
@@ -389,7 +185,6 @@ function AlertSection({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {/* Mini status dots */}
           <div className="flex gap-1">
             {alerts.map((a) => (
               <span
@@ -407,16 +202,11 @@ function AlertSection({
         </div>
       </button>
 
-      {/* Alerts */}
       {!collapsed && (
         <div className="ml-4 pl-4 border-l-2 border-gray-200 space-y-3">
-          {alerts.length === 0 ? (
-            <p className="text-sm text-gray-400 py-3 pl-2">All clear — no notifications in this category.</p>
-          ) : (
-            alerts.map((alert) => (
-              <AlertCard key={alert.id} alert={alert} onDismiss={onDismiss} />
-            ))
-          )}
+          {alerts.map((alert) => (
+            <AlertCard key={alert.id} alert={alert} onDismiss={onDismiss} />
+          ))}
         </div>
       )}
     </div>
@@ -426,24 +216,156 @@ function AlertSection({
 // ── Page ───────────────────────────────────────────────────────────────────
 
 export function Alerts() {
-  // Flatten all alerts with their section key to support per-alert dismissal
-  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [sectionsWithAlerts, setSectionsWithAlerts] = useState<AlertSection[]>([]);
+  const [restoredCount, setRestoredCount] = useState(0);
 
-  function handleDismiss(id: string) {
-    setDismissedIds((prev) => new Set([...prev, id]));
+  useEffect(() => {
+    if (!user) return;
+    fetchAlerts();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('alerts-realtime')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'Alert' },
+        () => {
+          // Re-fetch when any alert is inserted, updated, or deleted
+          fetchAlerts(true);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  async function fetchAlerts(silent = false) {
+    if (!silent) setLoading(true);
+    const data = await getOrCreateDefaultFarm(user!.id);
+    if (!data) return;
+
+    // Fetch all sensors for the zone
+    const { data: sensors } = await supabase
+      .from("Sensor")
+      .select("*")
+      .eq("zoneId", data.zone.id);
+
+    if (!sensors || sensors.length === 0) {
+      setLoading(false);
+      return;
+    }
+
+    const sensorIds = sensors.map(s => s.id);
+
+    // Fetch alerts
+    const { data: alerts } = await supabase
+      .from("Alert")
+      .select("*, sensor:Sensor(*)")
+      .in("sensorId", sensorIds)
+      .neq("status", "RESOLVED")
+      .order("createdAt", { ascending: false });
+
+    if (alerts) {
+      processAlerts(alerts as any[]);
+    }
+    setLoading(false);
   }
 
-  // Per-section filtered alerts (excluding dismissed)
-  const sectionsWithAlerts = SECTIONS.map((section) => ({
-    ...section,
-    alerts: section.alerts.filter((a) => !dismissedIds.has(a.id)),
-  }));
+  function processAlerts(dbAlerts: any[]) {
+    // Blueprint for sections
+    const initialSections: AlertSection[] = [
+      {
+        key: "soil", label: "Soil Moisture", sectionIcon: Droplets, imgSrc: SECTION_ICONS.soil,
+        color: { header: "bg-blue-50 border-blue-200", iconBg: "bg-blue-100", iconFg: "text-blue-600", dot: "bg-blue-500" },
+        alerts: []
+      },
+      {
+        key: "temperature", label: "Temperature Alerts", sectionIcon: Thermometer, imgSrc: SECTION_ICONS.temperature,
+        color: { header: "bg-red-50 border-red-200", iconBg: "bg-red-100", iconFg: "text-red-600", dot: "bg-red-500" },
+        alerts: []
+      },
+      {
+        key: "weather", label: "Weather Alerts", sectionIcon: Cloud, imgSrc: SECTION_ICONS.weather,
+        color: { header: "bg-sky-50 border-sky-200", iconBg: "bg-sky-100", iconFg: "text-sky-600", dot: "bg-sky-500" },
+        alerts: []
+      },
+      {
+        key: "general", label: "General Notifications", sectionIcon: Bell, imgSrc: SECTION_ICONS.general,
+        color: { header: "bg-gray-50 border-gray-200", iconBg: "bg-gray-100", iconFg: "text-gray-600", dot: "bg-gray-500" },
+        alerts: []
+      }
+    ];
 
-  // Global counts
-  const allAlerts   = sectionsWithAlerts.flatMap((s) => s.alerts);
+    dbAlerts.forEach(a => {
+      const type = a.type === "CRITICAL" ? "critical" : a.type === "WARNING" ? "warning" : "normal";
+      
+      let sectionKey = "general";
+      let icon = AlertCircle;
+
+      if (a.sensor?.type === "SOIL_MOISTURE" || a.sensor?.type === "RAINFALL") {
+        sectionKey = "soil"; icon = Droplets;
+      } else if (a.sensor?.type === "TEMPERATURE") {
+        sectionKey = "temperature"; icon = Thermometer;
+      } else if (a.sensor?.type === "HUMIDITY" || a.sensor?.type === "WIND_SPEED") {
+        sectionKey = "weather"; icon = Cloud;
+      }
+
+      const localAlert: LocalAlert = {
+        id: a.id,
+        title: `${a.type} - ${a.sensor?.name || "System"}`,
+        message: a.message,
+        status: type as LocalAlertStatus,
+        icon: icon,
+        time: new Date(a.createdAt).toLocaleString(),
+        dbStatus: a.status
+      };
+
+      const section = initialSections.find(s => s.key === sectionKey);
+      if (section) section.alerts.push(localAlert);
+    });
+
+    setSectionsWithAlerts(initialSections);
+  }
+
+  async function handleDismiss(id: string) {
+    // Optimistic update
+    setSectionsWithAlerts(prev => prev.map(section => ({
+      ...section,
+      alerts: section.alerts.filter(a => a.id !== id)
+    })));
+
+    setRestoredCount(c => c + 1);
+
+    const { error } = await supabase
+      .from("Alert")
+      .update({ status: "RESOLVED" })
+      .eq("id", id);
+
+    if (error) console.error("Error dismissing alert:", error);
+  }
+
+  async function handleRestore() {
+    setRestoredCount(0);
+    // Real app would fetch resolved, but here we just re-fetch active ones or undo
+    // For simplicity, we just trigger a refetch of all active if we want to restore some mock state
+    fetchAlerts(); 
+  }
+
+  const allAlerts = sectionsWithAlerts.flatMap((s) => s.alerts);
   const criticalCount = allAlerts.filter((a) => a.status === "critical").length;
   const warningCount  = allAlerts.filter((a) => a.status === "warning").length;
   const normalCount   = allAlerts.filter((a) => a.status === "normal").length;
+
+  if (loading) {
+    return <div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+  }
 
   return (
     <div className="p-4 lg:p-8 space-y-6">
@@ -453,12 +375,12 @@ export function Alerts() {
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Alerts & Recommendations</h1>
           <p className="text-gray-600 mt-1">Notifications are grouped by category for quick monitoring.</p>
         </div>
-        {dismissedIds.size > 0 && (
+        {restoredCount > 0 && (
           <button
-            onClick={() => setDismissedIds(new Set())}
+            onClick={handleRestore}
             className="text-sm text-primary underline underline-offset-2 hover:opacity-70"
           >
-            Restore {dismissedIds.size} dismissed
+            Refresh Alerts
           </button>
         )}
       </div>
@@ -492,7 +414,7 @@ export function Alerts() {
         <Card className="bg-green-50 border-green-200">
           <CardContent className="p-5 flex items-center justify-between">
             <div>
-              <p className="text-sm text-green-700 font-medium">All Good</p>
+              <p className="text-sm text-green-700 font-medium">Normal / Info</p>
               <p className="text-3xl font-bold text-green-900">{normalCount}</p>
             </div>
             <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
@@ -504,14 +426,23 @@ export function Alerts() {
 
       {/* ── Sectioned Alerts ── */}
       <div className="space-y-6">
-        {sectionsWithAlerts.map((section) => (
-          <AlertSection
-            key={section.key}
-            section={section}
-            alerts={section.alerts}
-            onDismiss={handleDismiss}
-          />
-        ))}
+        {allAlerts.length === 0 ? (
+           <Card>
+           <CardContent className="py-16 text-center">
+             <CheckCircle className="w-12 h-12 text-green-300 mx-auto mb-4" />
+             <p className="text-gray-500 font-medium">All clear! No active alerts right now.</p>
+           </CardContent>
+         </Card>
+        ) : (
+          sectionsWithAlerts.map((section) => (
+            <AlertSectionGroup
+              key={section.key}
+              section={section}
+              alerts={section.alerts}
+              onDismiss={handleDismiss}
+            />
+          ))
+        )}
       </div>
     </div>
   );

@@ -35,7 +35,7 @@ export function Register() {
 
     setLoading(true);
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: formData.email,
       password: formData.password,
       options: {
@@ -49,12 +49,26 @@ export function Register() {
     if (error) {
       setError(error.message);
       setLoading(false);
-    } else {
-      setSuccess(true);
-      setLoading(false);
-      // Auto-redirect after 3 seconds
-      setTimeout(() => navigate("/"), 3000);
+      return;
     }
+
+    if (data?.user) {
+      const { error: dbError } = await supabase.from("User").insert([{
+        id: data.user.id,
+        email: formData.email,
+        name: formData.name,
+        password: "MANAGED_BY_SUPABASE_AUTH"
+      }]);
+
+      if (dbError) {
+        console.error("Error saving user to database:", dbError);
+      }
+    }
+
+    setSuccess(true);
+    setLoading(false);
+    // Auto-redirect after 3 seconds
+    setTimeout(() => navigate("/"), 3000);
   };
 
   const handleChange = (field: string, value: string) => {

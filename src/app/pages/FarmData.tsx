@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
@@ -11,132 +11,106 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
-import { Search, Download, Calendar, Filter } from "lucide-react";
+import { Search, Download, Calendar, Filter, Loader2 } from "lucide-react";
+import { useAuth } from "../components/AuthProvider";
+import { supabase, DbSensor, DbSensorReading } from "../../lib/supabase";
+import { getOrCreateDefaultFarm } from "../../lib/farmUtils";
 
 interface FarmDataEntry {
   id: string;
   date: string;
   time: string;
-  soilMoisture: number;
-  temperature: number;
-  humidity: number;
+  timestamp: number;
+  soilMoisture: number | null;
+  temperature: number | null;
+  humidity: number | null;
   status: "normal" | "warning" | "critical";
 }
 
 export function FarmData() {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [farmData, setFarmData] = useState<FarmDataEntry[]>([]);
 
-  // Mock historical data
-  const farmData: FarmDataEntry[] = [
-    {
-      id: "1",
-      date: "Apr 09, 2026",
-      time: "10:00 AM",
-      soilMoisture: 30,
-      temperature: 28,
-      humidity: 65,
-      status: "critical",
-    },
-    {
-      id: "2",
-      date: "Apr 09, 2026",
-      time: "08:00 AM",
-      soilMoisture: 32,
-      temperature: 25,
-      humidity: 68,
-      status: "warning",
-    },
-    {
-      id: "3",
-      date: "Apr 09, 2026",
-      time: "06:00 AM",
-      soilMoisture: 35,
-      temperature: 22,
-      humidity: 72,
-      status: "warning",
-    },
-    {
-      id: "4",
-      date: "Apr 08, 2026",
-      time: "06:00 PM",
-      soilMoisture: 38,
-      temperature: 26,
-      humidity: 70,
-      status: "warning",
-    },
-    {
-      id: "5",
-      date: "Apr 08, 2026",
-      time: "04:00 PM",
-      soilMoisture: 40,
-      temperature: 30,
-      humidity: 62,
-      status: "normal",
-    },
-    {
-      id: "6",
-      date: "Apr 08, 2026",
-      time: "02:00 PM",
-      soilMoisture: 42,
-      temperature: 32,
-      humidity: 58,
-      status: "normal",
-    },
-    {
-      id: "7",
-      date: "Apr 08, 2026",
-      time: "12:00 PM",
-      soilMoisture: 44,
-      temperature: 31,
-      humidity: 60,
-      status: "normal",
-    },
-    {
-      id: "8",
-      date: "Apr 08, 2026",
-      time: "10:00 AM",
-      soilMoisture: 45,
-      temperature: 28,
-      humidity: 65,
-      status: "normal",
-    },
-    {
-      id: "9",
-      date: "Apr 08, 2026",
-      time: "08:00 AM",
-      soilMoisture: 46,
-      temperature: 24,
-      humidity: 70,
-      status: "normal",
-    },
-    {
-      id: "10",
-      date: "Apr 08, 2026",
-      time: "06:00 AM",
-      soilMoisture: 48,
-      temperature: 20,
-      humidity: 75,
-      status: "normal",
-    },
-    {
-      id: "11",
-      date: "Apr 07, 2026",
-      time: "06:00 PM",
-      soilMoisture: 47,
-      temperature: 25,
-      humidity: 68,
-      status: "normal",
-    },
-    {
-      id: "12",
-      date: "Apr 07, 2026",
-      time: "02:00 PM",
-      soilMoisture: 45,
-      temperature: 29,
-      humidity: 62,
-      status: "normal",
-    },
-  ];
+  useEffect(() => {
+    if (!user) return;
+
+    async function loadData() {
+      setLoading(true);
+      const data = await getOrCreateDefaultFarm(user!.id);
+      if (!data) return;
+
+      const { data: sensors } = await supabase
+        .from("Sensor")
+        .select("*")
+        .eq("zoneId", data.zone.id);
+
+      if (!sensors || sensors.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      const sensorIds = sensors.map(s => s.id);
+      
+      const { data: readings } = await supabase
+        .from("SensorReading")
+        .select("*")
+        .in("sensorId", sensorIds)
+        .order("timestamp", { ascending: false });
+
+      if (readings) {
+        processReadings(sensors as DbSensor[], readings as DbSensorReading[]);
+      }
+
+      setLoading(false);
+    }
+    loadData();
+  }, [user]);
+
+  function processReadings(allSensors: DbSensor[], allReadings: DbSensorReading[]) {
+    // Group readings by hour to mimic the table structure
+    const timeMap: Record<string, FarmDataEntry> = {};
+
+    allReadings.forEach(reading => {
+      const sensor = allSensors.find(s => s.id === reading.sensorId);
+      if (!sensor) return;
+
+      const d = new Date(reading.timestamp);
+      // Group by nearest hour roughly (just truncating to hour)
+      d.setMinutes(0, 0, 0);
+      const timeKey = d.getTime().toString();
+
+      if (!timeMap[timeKey]) {
+        timeMap[timeKey] = {
+          id: timeKey,
+          date: d.toLocaleDateString("en-US", { month: 'short', day: '2-digit', year: 'numeric' }),
+          time: d.toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit' }),
+          timestamp: d.getTime(),
+          soilMoisture: null,
+          temperature: null,
+          humidity: null,
+          status: "normal"
+        };
+      }
+
+      if (sensor.type === "SOIL_MOISTURE") timeMap[timeKey].soilMoisture = reading.value;
+      if (sensor.type === "TEMPERATURE") timeMap[timeKey].temperature = reading.value;
+      if (sensor.type === "HUMIDITY") timeMap[timeKey].humidity = reading.value;
+
+      // Determine status roughly based on thresholds
+      const isWarn = reading.value < sensor.minThreshold || reading.value > sensor.maxThreshold;
+      if (isWarn) {
+        // Simple logic: if any reading is out of bounds, mark the hour as warning (or critical if extreme)
+        const isExtreme = reading.value < (sensor.minThreshold - 5) || reading.value > (sensor.maxThreshold + 5);
+        if (isExtreme) timeMap[timeKey].status = "critical";
+        else if (timeMap[timeKey].status !== "critical") timeMap[timeKey].status = "warning";
+      }
+    });
+
+    const rows = Object.values(timeMap).sort((a, b) => b.timestamp - a.timestamp);
+    setFarmData(rows);
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -168,6 +142,47 @@ export function FarmData() {
       entry.time.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  function exportCSV() {
+    const headers = ["Date", "Time", "Soil Moisture (%)", "Temperature (°C)", "Humidity (%)", "Status"];
+    const csvRows = [headers.join(",")];
+
+    filteredData.forEach(row => {
+      csvRows.push([
+        row.date,
+        row.time,
+        row.soilMoisture !== null ? row.soilMoisture : "",
+        row.temperature !== null ? row.temperature : "",
+        row.humidity !== null ? row.humidity : "",
+        row.status
+      ].join(","));
+    });
+
+    const csvString = csvRows.join("\n");
+    const blob = new Blob([csvString], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.setAttribute("href", url);
+    a.setAttribute("download", `farm_data_${new Date().toISOString().slice(0,10)}.csv`);
+    a.click();
+  }
+
+  // Calculate stats
+  const totalMoisture = farmData.reduce((acc, r) => acc + (r.soilMoisture || 0), 0);
+  const totalTemp = farmData.reduce((acc, r) => acc + (r.temperature || 0), 0);
+  const totalHumidity = farmData.reduce((acc, r) => acc + (r.humidity || 0), 0);
+  
+  const moistureCount = farmData.filter(r => r.soilMoisture !== null).length;
+  const tempCount = farmData.filter(r => r.temperature !== null).length;
+  const humidityCount = farmData.filter(r => r.humidity !== null).length;
+
+  const avgMoisture = moistureCount ? (totalMoisture / moistureCount).toFixed(1) : "--";
+  const avgTemp = tempCount ? (totalTemp / tempCount).toFixed(1) : "--";
+  const avgHumidity = humidityCount ? (totalHumidity / humidityCount).toFixed(1) : "--";
+
+  if (loading) {
+    return <div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+  }
+
   return (
     <div className="p-4 lg:p-8 space-y-6">
       {/* Header */}
@@ -182,28 +197,28 @@ export function FarmData() {
           <CardContent className="p-6">
             <p className="text-sm text-gray-600 mb-1">Total Records</p>
             <p className="text-2xl font-bold text-gray-900">{farmData.length}</p>
-            <p className="text-xs text-gray-500 mt-1">Last 7 days</p>
+            <p className="text-xs text-gray-500 mt-1">All time</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6">
             <p className="text-sm text-gray-600 mb-1">Avg Soil Moisture</p>
-            <p className="text-2xl font-bold text-gray-900">41.5%</p>
-            <p className="text-xs text-green-600 mt-1">↑ 3.2% from last week</p>
+            <p className="text-2xl font-bold text-gray-900">{avgMoisture}%</p>
+            <p className="text-xs text-gray-500 mt-1">From recorded data</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6">
             <p className="text-sm text-gray-600 mb-1">Avg Temperature</p>
-            <p className="text-2xl font-bold text-gray-900">26.8°C</p>
-            <p className="text-xs text-gray-500 mt-1">Within normal range</p>
+            <p className="text-2xl font-bold text-gray-900">{avgTemp}°C</p>
+            <p className="text-xs text-gray-500 mt-1">From recorded data</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-6">
             <p className="text-sm text-gray-600 mb-1">Avg Humidity</p>
-            <p className="text-2xl font-bold text-gray-900">66.2%</p>
-            <p className="text-xs text-gray-500 mt-1">Optimal conditions</p>
+            <p className="text-2xl font-bold text-gray-900">{avgHumidity}%</p>
+            <p className="text-xs text-gray-500 mt-1">From recorded data</p>
           </CardContent>
         </Card>
       </div>
@@ -234,7 +249,7 @@ export function FarmData() {
                 <Filter className="w-4 h-4 mr-2" />
                 Filter
               </Button>
-              <Button variant="outline" size="default">
+              <Button variant="outline" size="default" onClick={exportCSV}>
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </Button>
@@ -260,12 +275,12 @@ export function FarmData() {
                     <TableCell className="font-medium">{entry.date}</TableCell>
                     <TableCell>{entry.time}</TableCell>
                     <TableCell>
-                      <span className={entry.soilMoisture < 35 ? "text-red-600 font-semibold" : ""}>
-                        {entry.soilMoisture}%
+                      <span className={(entry.soilMoisture && entry.soilMoisture < 35) ? "text-red-600 font-semibold" : ""}>
+                        {entry.soilMoisture ? `${entry.soilMoisture}%` : "--"}
                       </span>
                     </TableCell>
-                    <TableCell>{entry.temperature}°C</TableCell>
-                    <TableCell>{entry.humidity}%</TableCell>
+                    <TableCell>{entry.temperature ? `${entry.temperature}°C` : "--"}</TableCell>
+                    <TableCell>{entry.humidity ? `${entry.humidity}%` : "--"}</TableCell>
                     <TableCell>{getStatusBadge(entry.status)}</TableCell>
                   </TableRow>
                 ))}
@@ -288,7 +303,7 @@ export function FarmData() {
               <Button variant="outline" size="sm" disabled>
                 Previous
               </Button>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" disabled>
                 Next
               </Button>
             </div>
@@ -306,15 +321,15 @@ export function FarmData() {
             Download your farm data in various formats for analysis and record-keeping.
           </p>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={exportCSV}>
               <Download className="w-4 h-4 mr-2" />
               Export as CSV
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={exportCSV}>
               <Download className="w-4 h-4 mr-2" />
               Export as Excel
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={exportCSV}>
               <Download className="w-4 h-4 mr-2" />
               Export as PDF
             </Button>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -7,19 +7,47 @@ import { Switch } from "../components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Separator } from "../components/ui/separator";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { useAuth } from "../components/AuthProvider";
+import { supabase, DbFarm } from "../../lib/supabase";
+import { getOrCreateDefaultFarm } from "../../lib/farmUtils";
 import {
   User,
   MapPin,
   Mail,
   Phone,
-  Bell,
-  Shield,
-  Palette,
-  Globe,
   Camera,
+  Globe,
+  Loader2,
+  CheckCircle2,
 } from "lucide-react";
 
 export function Settings() {
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [savingFarm, setSavingFarm] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
+  
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Profile State
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [location, setLocation] = useState("");
+
+  // Farm State
+  const [farm, setFarm] = useState<DbFarm | null>(null);
+  const [farmName, setFarmName] = useState("");
+  const [farmSize, setFarmSize] = useState("");
+  const [cropType, setCropType] = useState("");
+  const [farmAddress, setFarmAddress] = useState("");
+
+  // Password State
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Notification State
   const [notifications, setNotifications] = useState({
     irrigation: true,
     weather: true,
@@ -29,8 +57,110 @@ export function Settings() {
     sms: false,
   });
 
+  useEffect(() => {
+    if (!user) return;
+    
+    // Load User Profile Data
+    setFullName(user.user_metadata?.name || "");
+    setEmail(user.email || "");
+    setPhone(user.user_metadata?.phone || "");
+    setLocation(user.user_metadata?.location || "");
+
+    // Load Farm Data
+    async function loadFarm() {
+      setLoading(true);
+      const data = await getOrCreateDefaultFarm(user!.id);
+      if (data) {
+        setFarm(data.farm);
+        setFarmName(data.farm.name);
+        setFarmAddress(data.farm.location || "");
+        // Metadata not explicitly in DB schema, so we mock or extract
+        setFarmSize("25"); 
+        setCropType("Wheat");
+      }
+      setLoading(false);
+    }
+    
+    loadFarm();
+  }, [user]);
+
+  function showToast(msg: string) {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  }
+
+  async function handleSaveProfile() {
+    setSavingProfile(true);
+    const { error } = await supabase.auth.updateUser({
+      data: { name: fullName, phone, location }
+    });
+    setSavingProfile(false);
+    if (error) {
+      console.error(error);
+      showToast("Error updating profile.");
+    } else {
+      showToast("Profile updated successfully!");
+    }
+  }
+
+  async function handleSaveFarm() {
+    if (!farm) return;
+    setSavingFarm(true);
+    const { error } = await supabase.from("Farm").update({
+      name: farmName,
+      location: farmAddress
+    }).eq("id", farm.id);
+    setSavingFarm(false);
+    
+    if (error) {
+      console.error(error);
+      showToast("Error updating farm settings.");
+    } else {
+      showToast("Farm settings updated successfully!");
+    }
+  }
+
+  async function handleUpdatePassword() {
+    if (newPassword !== confirmPassword) {
+      showToast("Passwords do not match.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      showToast("Password must be at least 6 characters.");
+      return;
+    }
+
+    setSavingPassword(true);
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    });
+    setSavingPassword(false);
+
+    if (error) {
+      console.error(error);
+      showToast("Error updating password.");
+    } else {
+      setNewPassword("");
+      setConfirmPassword("");
+      showToast("Password updated successfully!");
+    }
+  }
+
+  if (loading) {
+    return <div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
+  }
+
   return (
-    <div className="p-4 lg:p-8 space-y-6">
+    <div className="p-4 lg:p-8 space-y-6 relative">
+      
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed top-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-xl z-50 animate-in fade-in slide-in-from-top-5 flex items-center gap-2">
+          <CheckCircle2 className="w-5 h-5 text-green-400" />
+          {toastMessage}
+        </div>
+      )}
+
       {/* Header */}
       <div>
         <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Settings</h1>
@@ -57,7 +187,11 @@ export function Settings() {
               <div className="flex items-center gap-6">
                 <div className="relative">
                   <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                    <User className="w-12 h-12 text-gray-400" />
+                    {fullName ? (
+                      <div className="text-4xl text-gray-400 font-bold">{fullName.charAt(0).toUpperCase()}</div>
+                    ) : (
+                      <User className="w-12 h-12 text-gray-400" />
+                    )}
                   </div>
                   <button className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90">
                     <Camera className="w-4 h-4" />
@@ -80,7 +214,7 @@ export function Settings() {
                   <Label htmlFor="fullName">Full Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input id="fullName" defaultValue="John Farmer" className="pl-10" />
+                    <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} className="pl-10" />
                   </div>
                 </div>
 
@@ -91,8 +225,9 @@ export function Settings() {
                     <Input
                       id="email"
                       type="email"
-                      defaultValue="john.farmer@example.com"
-                      className="pl-10"
+                      value={email}
+                      disabled
+                      className="pl-10 bg-gray-50 text-gray-500"
                     />
                   </div>
                 </div>
@@ -101,7 +236,7 @@ export function Settings() {
                   <Label htmlFor="phone">Phone Number</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input id="phone" defaultValue="+1 (555) 123-4567" className="pl-10" />
+                    <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 123-4567" className="pl-10" />
                   </div>
                 </div>
 
@@ -109,14 +244,17 @@ export function Settings() {
                   <Label htmlFor="location">Location</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <Input id="location" defaultValue="California, USA" className="pl-10" />
+                    <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="California, USA" className="pl-10" />
                   </div>
                 </div>
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline">Cancel</Button>
-                <Button>Save Changes</Button>
+                <Button variant="outline" onClick={() => window.location.reload()}>Cancel</Button>
+                <Button onClick={handleSaveProfile} disabled={savingProfile}>
+                  {savingProfile ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  Save Changes
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -128,15 +266,10 @@ export function Settings() {
               <CardDescription>Manage your password and security settings</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="currentPassword">Current Password</Label>
-                <Input id="currentPassword" type="password" placeholder="Enter current password" />
-              </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="newPassword">New Password</Label>
-                  <Input id="newPassword" type="password" placeholder="Enter new password" />
+                  <Input id="newPassword" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter new password" />
                 </div>
 
                 <div className="space-y-2">
@@ -144,14 +277,19 @@ export function Settings() {
                   <Input
                     id="confirmPassword"
                     type="password"
+                    value={confirmPassword} 
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm new password"
                   />
                 </div>
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline">Cancel</Button>
-                <Button>Update Password</Button>
+                <Button variant="outline" onClick={() => {setNewPassword(""); setConfirmPassword("");}}>Cancel</Button>
+                <Button onClick={handleUpdatePassword} disabled={savingPassword || !newPassword}>
+                  {savingPassword ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  Update Password
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -168,29 +306,26 @@ export function Settings() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="farmName">Farm Name</Label>
-                  <Input id="farmName" defaultValue="Green Valley Farm" />
+                  <Input id="farmName" value={farmName} onChange={(e) => setFarmName(e.target.value)} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="farmSize">Farm Size (Hectares)</Label>
-                  <Input id="farmSize" type="number" defaultValue="25" />
+                  <Input id="farmSize" type="number" value={farmSize} onChange={(e) => setFarmSize(e.target.value)} />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="cropType">Primary Crop Type</Label>
-                  <Input id="cropType" defaultValue="Wheat" />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="sensors">Number of Sensors</Label>
-                  <Input id="sensors" type="number" defaultValue="12" />
+                  <Input id="cropType" value={cropType} onChange={(e) => setCropType(e.target.value)} />
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
                   <Label htmlFor="farmAddress">Farm Address</Label>
                   <Input
                     id="farmAddress"
-                    defaultValue="1234 Farm Road, California, USA"
+                    value={farmAddress} 
+                    onChange={(e) => setFarmAddress(e.target.value)}
+                    placeholder="1234 Farm Road, California, USA"
                     className="w-full"
                   />
                 </div>
@@ -222,8 +357,11 @@ export function Settings() {
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline">Cancel</Button>
-                <Button>Save Changes</Button>
+                <Button variant="outline" onClick={() => window.location.reload()}>Cancel</Button>
+                <Button onClick={handleSaveFarm} disabled={savingFarm}>
+                  {savingFarm ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  Save Changes
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -402,7 +540,7 @@ export function Settings() {
 
               <div className="flex justify-end gap-2">
                 <Button variant="outline">Cancel</Button>
-                <Button>Save Preferences</Button>
+                <Button onClick={() => showToast("Preferences saved!")}>Save Preferences</Button>
               </div>
             </CardContent>
           </Card>

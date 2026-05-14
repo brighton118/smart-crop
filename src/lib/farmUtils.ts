@@ -15,6 +15,23 @@ export async function getOrCreateDefaultFarm(userId: string, farmName: string = 
 
     // 2. If no farm exists, create one
     if (!farm) {
+      // FIX: Ensure the user exists in the public.User table to satisfy the foreign key constraint
+      const { data: existingUser } = await supabase.from("User").select("id").eq("id", userId);
+      
+      if (!existingUser || existingUser.length === 0) {
+        // Fetch real user details from Auth
+        const { data: authData } = await supabase.auth.getUser();
+        const email = authData?.user?.email || `user_${userId}@smartagro.com`;
+        const name = authData?.user?.user_metadata?.name || "Farmer";
+
+        await supabase.from("User").insert([{ 
+          id: userId, 
+          email: email, 
+          name: name, 
+          password: "MANAGED_BY_SUPABASE_AUTH" 
+        }]);
+      }
+
       const { data: newFarm, error: createFarmErr } = await supabase
         .from("Farm")
         .insert([{ name: farmName, userId: userId }])

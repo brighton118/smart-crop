@@ -7,8 +7,9 @@ import { Switch } from "../components/ui/switch";
 import { Separator } from "../components/ui/separator";
 import { Badge } from "../components/ui/badge";
 import { useAuth } from "../components/AuthProvider";
-import { supabase, DbSensor, DbZone, SensorType, SensorStatus } from "../../lib/supabase";
+import { supabase, DbSensor, DbZone, SensorType } from "../../lib/supabase";
 import { getOrCreateDefaultFarm } from "../../lib/farmUtils";
+import { toast } from "sonner";
 import {
   Wifi,
   WifiOff,
@@ -108,7 +109,6 @@ export function SensorConfig() {
     
     // Attach a random initial simulated value to each
     const visualSensors = (data as DbSensor[]).map(s => {
-      const meta = SENSOR_META[s.type];
       return {
         ...s,
         lastValue: randomBetween(s.minThreshold, s.maxThreshold)
@@ -197,11 +197,13 @@ export function SensorConfig() {
 
     if (error) {
       console.error("Error adding sensor:", error);
+      toast.error(`Failed to add sensor: ${error.message}`);
     } else {
       const newSensor = data as DbSensor;
       setSensors((prev) => [...prev, { ...newSensor, lastValue: randomBetween(newSensor.minThreshold, newSensor.maxThreshold) }]);
       setShowAddForm(false);
       setForm({ ...EMPTY_FORM });
+      toast.success(`${form.name || meta.label} added to the database successfully!`);
     }
     setActionLoading(false);
   }
@@ -225,12 +227,14 @@ export function SensorConfig() {
 
     if (error) {
       console.error("Error updating sensor:", error);
+      toast.error(`Failed to update sensor: ${error.message}`);
     } else {
       setSensors((prev) =>
         prev.map((s) => s.id === editingId ? { ...s, ...updates } : s)
       );
       setEditingId(null);
       setShowAddForm(false);
+      toast.success("Sensor updated successfully!");
     }
     setActionLoading(false);
   }
@@ -239,8 +243,10 @@ export function SensorConfig() {
     const { error } = await supabase.from("Sensor").delete().eq("id", id);
     if (error) {
       console.error("Error deleting sensor:", error);
+      toast.error(`Failed to delete sensor: ${error.message}`);
     } else {
       setSensors((prev) => prev.filter((s) => s.id !== id));
+      toast.success("Sensor deleted from database.");
     }
   }
 
