@@ -113,8 +113,12 @@ export function Layout() {
           {/* User Section */}
           <div className="p-4 border-t">
             <div className="flex items-center space-x-3 px-4 py-3 mb-2">
-              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-gray-600" />
+              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                {user?.user_metadata?.avatar_url ? (
+                  <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-5 h-5 text-gray-600" />
+                )}
               </div>
               <div className="flex-1 overflow-hidden">
                 <div className="font-medium text-sm truncate">
@@ -189,8 +193,12 @@ export function Layout() {
           {/* User Section */}
           <div className="p-4 border-t">
             <div className="flex items-center space-x-3 px-4 py-3 mb-2">
-              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-                <User className="w-5 h-5 text-gray-600" />
+              <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
+                {user?.user_metadata?.avatar_url ? (
+                  <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-5 h-5 text-gray-600" />
+                )}
               </div>
               <div className="flex-1 overflow-hidden">
                 <div className="font-medium text-sm truncate">

@@ -35,6 +35,8 @@ export function Settings() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [location, setLocation] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // Farm State
   const [farm, setFarm] = useState<DbFarm | null>(null);
@@ -65,6 +67,7 @@ export function Settings() {
     setEmail(user.email || "");
     setPhone(user.user_metadata?.phone || "");
     setLocation(user.user_metadata?.location || "");
+    setAvatarUrl(user.user_metadata?.avatar_url || "");
 
     // Load Farm Data
     async function loadFarm() {
@@ -100,6 +103,47 @@ export function Settings() {
       showToast("Error updating profile.");
     } else {
       showToast("Profile updated successfully!");
+    }
+  }
+
+  async function handleAvatarUpload(event: React.ChangeEvent<HTMLInputElement>) {
+    try {
+      setUploadingAvatar(true);
+      if (!event.target.files || event.target.files.length === 0) {
+        throw new Error('You must select an image to upload.');
+      }
+
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user?.id}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+      if (file.size > 2 * 1024 * 1024) {
+        throw new Error('File size must be less than 2MB');
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl }
+      });
+
+      if (updateError) throw updateError;
+
+      setAvatarUrl(publicUrl);
+      showToast("Profile picture updated!");
+    } catch (error: any) {
+      console.error(error);
+      showToast(error.message || "Error uploading image");
+    } finally {
+      setUploadingAvatar(false);
     }
   }
 
@@ -186,23 +230,33 @@ export function Settings() {
               {/* Profile Picture */}
               <div className="flex items-center gap-6">
                 <div className="relative">
-                  <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                    {fullName ? (
+                  <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden border-4 border-white shadow-sm">
+                    {uploadingAvatar ? (
+                      <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                    ) : avatarUrl ? (
+                      <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : fullName ? (
                       <div className="text-4xl text-gray-400 font-bold">{fullName.charAt(0).toUpperCase()}</div>
                     ) : (
                       <User className="w-12 h-12 text-gray-400" />
                     )}
                   </div>
-                  <button className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90">
+                  <label className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90 cursor-pointer shadow-md transition-colors">
                     <Camera className="w-4 h-4" />
-                  </button>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+                  </label>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Profile Picture</h3>
                   <p className="text-sm text-gray-600 mb-2">JPG, PNG or GIF. Max size 2MB</p>
-                  <Button variant="outline" size="sm">
-                    Upload New Photo
-                  </Button>
+                  <label>
+                    <Button variant="outline" size="sm" asChild disabled={uploadingAvatar}>
+                      <span>
+                        {uploadingAvatar ? "Uploading..." : "Upload New Photo"}
+                      </span>
+                    </Button>
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+                  </label>
                 </div>
               </div>
 
