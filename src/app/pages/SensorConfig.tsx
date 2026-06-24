@@ -36,12 +36,12 @@ import {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const SENSOR_META: Record<string, { icon: React.ElementType; color: string; label: string; defaultUnit: string; min: number; max: number }> = {
-  SOIL_MOISTURE: { icon: Droplets,    color: "text-blue-600",   label: "Soil Moisture", defaultUnit: "%",    min: 0,  max: 100 },
-  TEMPERATURE:   { icon: Thermometer, color: "text-orange-500", label: "Temperature",   defaultUnit: "°C",   min: -10, max: 60 },
-  HUMIDITY:      { icon: Wind,        color: "text-sky-500",    label: "Humidity",      defaultUnit: "%",    min: 0,  max: 100 },
-  LIGHT:         { icon: Sun,         color: "text-yellow-500", label: "Light",         defaultUnit: "lux",  min: 0,  max: 100000 },
-  WIND_SPEED:    { icon: Activity,    color: "text-teal-500",   label: "Wind Speed",    defaultUnit: "km/h", min: 0,  max: 120 },
-  RAINFALL:      { icon: Zap,         color: "text-indigo-500", label: "Rainfall",      defaultUnit: "mm",   min: 0,  max: 500 },
+  SOIL_MOISTURE: { icon: Droplets,    color: "text-blue-600",   label: "Substrate Moisture (VWC)", defaultUnit: "%",    min: 0,  max: 100 },
+  TEMPERATURE:   { icon: Thermometer, color: "text-orange-500", label: "Canopy Temperature",        defaultUnit: "°C",   min: -10, max: 60 },
+  HUMIDITY:      { icon: Wind,        color: "text-sky-500",    label: "Grow Room RH",              defaultUnit: "%",    min: 0,  max: 100 },
+  LIGHT:         { icon: Sun,         color: "text-yellow-500", label: "PAR (PPFD)",                defaultUnit: "μmol/m²/s", min: 0, max: 2000 },
+  WIND_SPEED:    { icon: Activity,    color: "text-teal-500",   label: "Air Circulation",           defaultUnit: "m/s",  min: 0,  max: 5 },
+  RAINFALL:      { icon: Zap,         color: "text-indigo-500", label: "Feed Runoff",               defaultUnit: "mm",   min: 0,  max: 500 },
 };
 
 function genId() {

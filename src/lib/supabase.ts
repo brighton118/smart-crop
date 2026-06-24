@@ -76,3 +76,19 @@ export interface DbFarm {
   createdAt: string;
   updatedAt: string;
 }
+
+export type CropStatus = 'SEEDLING' | 'VEGETATIVE' | 'FLOWERING' | 'GROWING' | 'HARVESTED';
+
+export interface DbCropRecord {
+  id: string;
+  batchName: string;
+  strain: string;
+  plantedDate: string;
+  harvestDate: string | null;
+  status: CropStatus;
+  yield: number | null;
+  zoneId: string;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

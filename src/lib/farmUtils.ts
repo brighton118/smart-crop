@@ -1,6 +1,6 @@
 import { supabase, DbFarm, DbZone } from "./supabase";
 
-export async function getOrCreateDefaultFarm(userId: string, farmName: string = "My Smart Farm"): Promise<{ farm: DbFarm, zone: DbZone } | null> {
+export async function getOrCreateDefaultFarm(userId: string, farmName: string = "KindBuds Facility 1"): Promise<{ farm: DbFarm, zone: DbZone } | null> {
   try {
     // 1. Check if user already has a farm
     const { data: existingFarms, error: farmErr } = await supabase
@@ -21,7 +21,7 @@ export async function getOrCreateDefaultFarm(userId: string, farmName: string = 
       if (!existingUser || existingUser.length === 0) {
         // Fetch real user details from Auth
         const { data: authData } = await supabase.auth.getUser();
-        const email = authData?.user?.email || `user_${userId}@smartagro.com`;
+        const email = authData?.user?.email || `user_${userId}@kindbudsltd.com`;
         const name = authData?.user?.user_metadata?.name || "Farmer";
 
         await supabase.from("User").insert([{ 
@@ -53,11 +53,11 @@ export async function getOrCreateDefaultFarm(userId: string, farmName: string = 
 
     let zone = existingZones?.[0] as DbZone;
 
-    // 4. If no zones exist, create a default "Main Field" zone
+    // 4. If no zones exist, create a default "Flowering Room A" zone
     if (!zone) {
       const { data: newZone, error: createZoneErr } = await supabase
         .from("Zone")
-        .insert([{ name: "Main Field", farmId: farm.id }])
+        .insert([{ name: "Flowering Room A", farmId: farm.id }])
         .select()
         .single();
 

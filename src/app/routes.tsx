@@ -7,6 +7,7 @@ import { Alerts } from "./pages/Alerts";
 import { FarmData } from "./pages/FarmData";
 import { Settings } from "./pages/Settings";
 import { SensorConfig } from "./pages/SensorConfig";
+import { Records } from "./pages/Records";
 import { Layout } from "./components/Layout";
 
 export const router = createBrowserRouter([
@@ -41,6 +42,10 @@ export const router = createBrowserRouter([
       {
         path: "sensors",
         element: <SensorConfig />,
+      },
+      {
+        path: "records",
+        element: <Records />,
       },
       {
         path: "settings",

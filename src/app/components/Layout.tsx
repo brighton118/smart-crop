@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Button } from "./ui/button";
 import { useAuth } from "./AuthProvider";
 import {
@@ -13,6 +14,7 @@ import {
   LogOut,
   User,
   Radio,
+  ClipboardList,
 } from "lucide-react";
 
 export function Layout() {
@@ -20,6 +22,7 @@ export function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, loading, signOut } = useAuth();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -32,6 +35,7 @@ export function Layout() {
     { path: "/app/alerts",  icon: Bell,            label: "Alerts" },
     { path: "/app/farm-data", icon: Database,       label: "Farm Data" },
     { path: "/app/sensors", icon: Radio,            label: "Sensors" },
+    { path: "/app/records", icon: ClipboardList,    label: "Records" },
     { path: "/app/settings", icon: Settings,        label: "Settings" },
   ];
 
@@ -48,7 +52,7 @@ export function Layout() {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">Loading...</div>;
+    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">{t("Loading...")}</div>;
   }
 
   if (!user) {
@@ -64,7 +68,7 @@ export function Layout() {
             <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-lg">
               <Sprout className="w-6 h-6 text-white" />
             </div>
-            <span className="text-lg font-bold text-gray-900">Smart AgroConnect</span>
+            <span className="text-lg font-bold text-gray-900">{t("KindBuds Ltd.")}</span>
           </div>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2">
             {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -82,8 +86,8 @@ export function Layout() {
                 <Sprout className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="font-bold text-gray-900">Smart AgroConnect</div>
-                <div className="text-xs text-gray-500">Farm Management</div>
+                <div className="font-bold text-gray-900">{t("KindBuds Ltd.")}</div>
+                <div className="text-xs text-gray-500">{t("Cannabis Cultivation")}</div>
               </div>
             </div>
           </div>
@@ -161,8 +165,8 @@ export function Layout() {
                 <Sprout className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className="font-bold text-gray-900">Smart AgroConnect</div>
-                <div className="text-xs text-gray-500">Farm Management</div>
+                <div className="font-bold text-gray-900">{t("KindBuds Ltd.")}</div>
+                <div className="text-xs text-gray-500">{t("Cannabis Cultivation")}</div>
               </div>
             </div>
           </div>

@@ -68,10 +68,11 @@ export async function seedDatabaseIfEmpty(zoneId: string) {
       const time = new Date(now.getTime() - Math.floor(Math.random() * 24) * 60 * 60 * 1000);
 
       let message = "";
-      if (randomSensor.type === "SOIL_MOISTURE") message = "Soil moisture dropping below threshold.";
-      else if (randomSensor.type === "TEMPERATURE") message = "Temperature spike detected.";
-      else if (randomSensor.type === "HUMIDITY") message = "High humidity levels could cause fungal growth.";
-      else message = `Abnormal reading detected for ${randomSensor.name}.`;
+      if (randomSensor.type === "SOIL_MOISTURE") message = "Substrate VWC dropping below 45% threshold in Flowering Room A.";
+      else if (randomSensor.type === "TEMPERATURE") message = "Canopy temperature spike detected. Vapor Pressure Deficit (VPD) is outside optimal vegetative range.";
+      else if (randomSensor.type === "HUMIDITY") message = "Relative humidity exceeds 65% in flowering chamber, increasing risk of botrytis (bud rot).";
+      else if (randomSensor.type === "LIGHT") message = "PAR levels are below target PPFD for active flower room photoperiod.";
+      else message = `Abnormal reading detected for sensor ${randomSensor.name}.`;
 
       alerts.push({
         sensorId: randomSensor.id,

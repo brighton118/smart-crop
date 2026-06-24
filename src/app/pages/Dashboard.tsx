@@ -208,7 +208,7 @@ export function Dashboard() {
 
   const stats = [
     {
-      title: "Soil Moisture",
+      title: "Substrate Moisture (VWC)",
       value: avgMoisture ? `${avgMoisture}%` : "--",
       status: avgMoisture < 35 ? "Low" : "Normal",
       icon: Droplets,
@@ -219,7 +219,7 @@ export function Dashboard() {
       trendDown: true,
     },
     {
-      title: "Temperature",
+      title: "Canopy Temperature",
       value: avgTemp ? `${avgTemp}°C` : "--",
       status: "Normal",
       icon: Thermometer,
@@ -230,7 +230,7 @@ export function Dashboard() {
       trendDown: false,
     },
     {
-      title: "Humidity",
+      title: "Grow Room RH",
       value: avgHumidity ? `${avgHumidity}%` : "--",
       status: "Normal",
       icon: Wind,
@@ -241,14 +241,14 @@ export function Dashboard() {
       trendDown: false,
     },
     {
-      title: "Weather",
-      value: "Sunny",
-      status: "Clear Sky",
+      title: "Vapor Pressure Deficit",
+      value: "1.2 kPa",
+      status: "Optimal",
       icon: Cloud,
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-50",
-      iconColor: "text-yellow-600",
-      trend: "25°C",
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50",
+      iconColor: "text-emerald-600",
+      trend: "0.0 kPa",
       trendDown: false,
     },
   ];
@@ -271,7 +271,7 @@ export function Dashboard() {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">Welcome back! Here's your farm overview.</p>
+          <p className="text-gray-600 mt-1">Welcome back! Here's your grow facility overview.</p>
         </div>
         <div className="flex items-center space-x-2 text-sm text-gray-600">
           <span>Last updated: Just now</span>
@@ -327,7 +327,7 @@ export function Dashboard() {
         {/* Soil Moisture Chart */}
         <Card>
           <CardHeader>
-            <CardTitle>Soil Moisture Trend</CardTitle>
+            <CardTitle>Substrate Moisture Trend (VWC)</CardTitle>
             <p className="text-sm text-gray-600">Last 24 hours</p>
           </CardHeader>
           <CardContent>
@@ -402,20 +402,20 @@ export function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle>Farm Overview</CardTitle>
+            <CardTitle>Grow Facility Overview</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="rounded-lg overflow-hidden">
               <ImageWithFallback
-                src="https://images.unsplash.com/photo-1669830239215-4dca77c47f82?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhZ3JpY3VsdHVyYWwlMjBmaWVsZCUyMGFlcmlhbCUyMHZpZXd8ZW58MXx8fHwxNzc1NzEwNzQ0fDA&ixlib=rb-4.1.0&q=80&w=1080"
-                alt="Farm Aerial View"
+                src="/cannabis_dashboard.png"
+                alt="Cannabis Grow Canopy"
                 className="w-full h-64 object-cover"
               />
             </div>
             <div className="mt-4 grid grid-cols-3 gap-4">
               <div>
-                <p className="text-sm text-gray-600">Farm Name</p>
-                <p className="text-xl font-semibold text-gray-900">{farm?.name || "My Farm"}</p>
+                <p className="text-sm text-gray-600">Facility Name</p>
+                <p className="text-xl font-semibold text-gray-900">{farm?.name || "KindBuds Facility"}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-600">Active Sensors</p>
@@ -435,25 +435,25 @@ export function Dashboard() {
           </CardHeader>
           <CardContent className="space-y-3">
             <button 
-              onClick={() => showToast("Irrigation system activated for Zone A.")}
+              onClick={() => showToast("Feeding & Nutrients irrigation activated for Flowering Room A.")}
               className="w-full p-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-left"
             >
-              <div className="font-semibold">Start Irrigation</div>
-              <div className="text-sm opacity-90">Activate water system</div>
+              <div className="font-semibold">Trigger Feeding Cycle</div>
+              <div className="text-sm opacity-90">Activate nutrient drip feed</div>
             </button>
             <button 
-              onClick={() => showToast("Weather forecast: Clear skies, no rain expected.")}
+              onClick={() => showToast("Grow room photoperiod cycle is configured to 12/12 bloom schedule.")}
               className="w-full p-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-left"
             >
-              <div className="font-semibold">View Weather Forecast</div>
-              <div className="text-sm opacity-90">7-day prediction</div>
+              <div className="font-semibold">Adjust Light Photoperiod</div>
+              <div className="text-sm opacity-90">Manage 12/12 or 18/6 light schedule</div>
             </button>
             <button 
-              onClick={() => showToast("Report generated! Check your downloads.")}
+              onClick={() => showToast("Cultivation log and environmental metrics report generated successfully.")}
               className="w-full p-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-left"
             >
-              <div className="font-semibold">Generate Report</div>
-              <div className="text-sm opacity-90">Export farm data</div>
+              <div className="font-semibold">Export Crop Log & Yield Data</div>
+              <div className="text-sm opacity-90">Download full batch analytics</div>
             </button>
           </CardContent>
         </Card>

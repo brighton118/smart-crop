@@ -13,12 +13,12 @@ app.use(cors());
 app.use(express.json());
 
 // Health Check Endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Smart AgroConnect API is running' });
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', message: 'KindBuds Ltd. Cultivation API is running' });
 });
 
 // Get all sensors
-app.get('/api/sensors', async (req, res) => {
+app.get('/api/sensors', async (_req, res) => {
   try {
     const sensors = await prisma.sensor.findMany();
     res.json(sensors);

@@ -79,7 +79,7 @@ export function Settings() {
         setFarmAddress(data.farm.location || "");
         // Metadata not explicitly in DB schema, so we mock or extract
         setFarmSize("25"); 
-        setCropType("Wheat");
+        setCropType("Cannabis Sativa");
       }
       setLoading(false);
     }
@@ -214,7 +214,7 @@ export function Settings() {
       <Tabs defaultValue="profile" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="farm">Farm Settings</TabsTrigger>
+          <TabsTrigger value="farm">Grow Facility</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="preferences">Preferences</TabsTrigger>
         </TabsList>
@@ -353,33 +353,33 @@ export function Settings() {
         <TabsContent value="farm" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Farm Information</CardTitle>
-              <CardDescription>Configure your farm details and location</CardDescription>
+              <CardTitle>Grow Facility Information</CardTitle>
+              <CardDescription>Configure your indoor facility details and location</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="farmName">Farm Name</Label>
+                  <Label htmlFor="farmName">Facility Name</Label>
                   <Input id="farmName" value={farmName} onChange={(e) => setFarmName(e.target.value)} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="farmSize">Farm Size (Hectares)</Label>
+                  <Label htmlFor="farmSize">Total Canopy (m²)</Label>
                   <Input id="farmSize" type="number" value={farmSize} onChange={(e) => setFarmSize(e.target.value)} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="cropType">Primary Crop Type</Label>
+                  <Label htmlFor="cropType">Cultivar / Strain</Label>
                   <Input id="cropType" value={cropType} onChange={(e) => setCropType(e.target.value)} />
                 </div>
 
                 <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="farmAddress">Farm Address</Label>
+                  <Label htmlFor="farmAddress">Facility Address</Label>
                   <Input
                     id="farmAddress"
                     value={farmAddress} 
                     onChange={(e) => setFarmAddress(e.target.value)}
-                    placeholder="1234 Farm Road, California, USA"
+                    placeholder="Unit 4, Greenleaf Industrial Park, Denver, CO"
                     className="w-full"
                   />
                 </div>
@@ -395,13 +395,13 @@ export function Settings() {
 
               <Separator />
 
-              {/* Farm Image */}
+              {/* Facility Image */}
               <div>
-                <Label className="mb-2">Farm Image</Label>
+                <Label className="mb-2">Facility Image</Label>
                 <div className="mt-2 rounded-lg overflow-hidden border">
                   <ImageWithFallback
-                    src="https://images.unsplash.com/photo-1632135558972-195494369111?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzbWFydCUyMGZhcm1pbmclMjBzZW5zb3JzJTIwY3JvcHN8ZW58MXx8fHwxNzc1NzI2MzIwfDA&ixlib=rb-4.1.0&q=80&w=1080"
-                    alt="Farm"
+                    src="/cannabis_settings.png"
+                    alt="KindBuds Grow Facility"
                     className="w-full h-48 object-cover"
                   />
                 </div>
@@ -432,9 +432,9 @@ export function Settings() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Irrigation Alerts</Label>
+                    <Label>Fertigation Alerts</Label>
                     <p className="text-sm text-gray-600">
-                      Get notified when soil moisture is low
+                      Get notified when substrate VWC or EC is out of range
                     </p>
                   </div>
                   <Switch
@@ -449,9 +449,9 @@ export function Settings() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Weather Alerts</Label>
+                    <Label>VPD &amp; Climate Alerts</Label>
                     <p className="text-sm text-gray-600">
-                      Receive weather forecasts and warnings
+                      Receive alerts when VPD or RH deviates from target
                     </p>
                   </div>
                   <Switch
@@ -466,9 +466,9 @@ export function Settings() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Pest Risk Alerts</Label>
+                    <Label>IPM &amp; Pathogen Alerts</Label>
                     <p className="text-sm text-gray-600">
-                      Get notified about potential pest risks
+                      Get notified about mould, spider mites, or aphid pressure
                     </p>
                   </div>
                   <Switch
@@ -483,9 +483,9 @@ export function Settings() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Temperature Alerts</Label>
+                    <Label>Canopy Temperature Alerts</Label>
                     <p className="text-sm text-gray-600">
-                      Alerts for extreme temperature conditions
+                      Alerts when canopy temp exceeds safe growing thresholds
                     </p>
                   </div>
                   <Switch
@@ -621,7 +621,7 @@ export function Settings() {
                 <div className="space-y-0.5">
                   <Label>Auto-backup Data</Label>
                   <p className="text-sm text-gray-600">
-                    Automatically backup your farm data daily
+                    Automatically backup your grow facility data daily
                   </p>
                 </div>
                 <Switch defaultChecked />

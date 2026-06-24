@@ -1,7 +1,7 @@
 
-  # Smart AgroConnect UI/UX Prototype
+  # KindBuds Ltd. Cultivation Manager
 
-  This is a code bundle for Smart AgroConnect UI/UX Prototype. The original project is available at https://www.figma.com/design/zeCGcFbHT6jONKvATK5vHf/Smart-AgroConnect-UI-UX-Prototype.
+  This is a cultivation management system for KindBuds Ltd. majoring on indoor cannabis growing.
 
   ## Running the code
 

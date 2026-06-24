@@ -37,15 +37,15 @@ export function Login() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
             <Sprout className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Smart AgroConnect</h1>
-          <p className="text-gray-600">AI-Powered Smart Farming System</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">KindBuds Ltd.</h1>
+          <p className="text-gray-600">AI-Powered Cannabis Cultivation Manager</p>
         </div>
 
         {/* Login Card */}
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle>Welcome Back</CardTitle>
-            <CardDescription>Sign in to access your farm dashboard</CardDescription>
+            <CardDescription>Sign in to access your cultivation dashboard</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
@@ -122,7 +122,7 @@ export function Login() {
         </Card>
 
         <p className="text-center text-xs text-gray-500 mt-8">
-          © 2026 Smart AgroConnect. All rights reserved.
+          © 2026 KindBuds Ltd. All rights reserved.
         </p>
       </div>
     </div>

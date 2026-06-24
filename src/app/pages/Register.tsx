@@ -101,15 +101,15 @@ export function Register() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-primary rounded-2xl mb-4">
             <Sprout className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Smart AgroConnect</h1>
-          <p className="text-gray-600">Join the future of smart farming</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">KindBuds Ltd.</h1>
+          <p className="text-gray-600">Join the future of professional cannabis cultivation</p>
         </div>
 
         {/* Register Card */}
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle>Create Account</CardTitle>
-            <CardDescription>Get started with your smart farming journey</CardDescription>
+            <CardDescription>Get started with your cultivation journey</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleRegister} className="space-y-4">
@@ -157,7 +157,7 @@ export function Register() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="farmLocation">Farm Location</Label>
+                <Label htmlFor="farmLocation">Facility Location</Label>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <Input
@@ -231,7 +231,7 @@ export function Register() {
         </Card>
 
         <p className="text-center text-xs text-gray-500 mt-8">
-          © 2026 Smart AgroConnect. All rights reserved.
+          © 2026 KindBuds Ltd. All rights reserved.
         </p>
       </div>
     </div>
