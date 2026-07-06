@@ -21,12 +21,12 @@ import {
 
 // Section icon images
 const SECTION_ICONS = {
-  soil:        "/icons/icon_soil_moisture.png",
-  pest:        "/icons/icon_pest_warnings.png",
-  weather:     "/icons/icon_weather_alerts.png",
+  soil: "/icons/icon_soil_moisture.png",
+  pest: "/icons/icon_pest_warnings.png",
+  weather: "/icons/icon_weather_alerts.png",
   temperature: "/icons/icon_temperature_alerts.png",
-  growth:      "/icons/icon_growth_yield.png",
-  general:     "/icons/icon_growth_yield.png",
+  growth: "/icons/icon_growth_yield.png",
+  general: "/icons/icon_growth_yield.png",
 } as const;
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -64,34 +64,34 @@ function getAlertStyles(status: LocalAlertStatus) {
   switch (status) {
     case "critical":
       return {
-        card:    "bg-red-50 border-red-200",
-        iconBg:  "bg-red-100",
-        iconFg:  "text-red-600",
-        badge:   "destructive" as const,
-        label:   "Critical",
+        card: "bg-red-50 border-red-200",
+        iconBg: "bg-red-100",
+        iconFg: "text-red-600",
+        badge: "destructive" as const,
+        label: "Critical",
       };
     case "warning":
       return {
-        card:    "bg-yellow-50 border-yellow-200",
-        iconBg:  "bg-yellow-100",
-        iconFg:  "text-yellow-600",
-        badge:   "outline" as const,
-        label:   "Warning",
+        card: "bg-yellow-50 border-yellow-200",
+        iconBg: "bg-yellow-100",
+        iconFg: "text-yellow-600",
+        badge: "outline" as const,
+        label: "Warning",
       };
     case "normal":
       return {
-        card:    "bg-green-50 border-green-200",
-        iconBg:  "bg-green-100",
-        iconFg:  "text-green-600",
-        badge:   "secondary" as const,
-        label:   "Normal",
+        card: "bg-green-50 border-green-200",
+        iconBg: "bg-green-100",
+        iconFg: "text-green-600",
+        badge: "secondary" as const,
+        label: "Normal",
       };
   }
 }
 
 function StatusIcon({ status }: { status: LocalAlertStatus }) {
   if (status === "critical") return <AlertTriangle className="w-4 h-4" />;
-  if (status === "warning")  return <AlertCircle   className="w-4 h-4" />;
+  if (status === "warning") return <AlertCircle className="w-4 h-4" />;
   return <CheckCircle className="w-4 h-4" />;
 }
 
@@ -100,6 +100,7 @@ function StatusIcon({ status }: { status: LocalAlertStatus }) {
 function AlertCard({ alert, onDismiss }: { alert: LocalAlert; onDismiss: (id: string) => void }) {
   const styles = getAlertStyles(alert.status);
   const Icon = alert.icon;
+  const [showDetails, setShowDetails] = useState(false);
 
   return (
     <Card className={`${styles.card} border`}>
@@ -125,10 +126,37 @@ function AlertCard({ alert, onDismiss }: { alert: LocalAlert; onDismiss: (id: st
                 </div>
               )}
               <p className="text-xs text-gray-400 mt-2">{alert.time}</p>
+
+              {/* Expanded Details */}
+              {showDetails && (
+                <div className="mt-3 p-4 bg-white rounded-lg border border-gray-200 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <p className="font-semibold text-gray-600">Alert ID</p>
+                      <p className="text-gray-800 font-mono">{alert.id.slice(0, 12)}…</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-600">Severity</p>
+                      <p className="text-gray-800 capitalize">{alert.status}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-600">Database Status</p>
+                      <p className="text-gray-800">{alert.dbStatus}</p>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-600">Timestamp</p>
+                      <p className="text-gray-800">{alert.time}</p>
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-500 pt-1 border-t">{alert.message}</p>
+                </div>
+              )}
             </div>
           </div>
           <div className="flex gap-2 flex-shrink-0">
-            <Button variant="outline" size="sm" className="text-xs h-8">Details</Button>
+            <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => setShowDetails((v) => !v)}>
+              {showDetails ? "Hide" : "Details"}
+            </Button>
             <button
               onClick={() => onDismiss(alert.id)}
               className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors"
@@ -157,7 +185,7 @@ function AlertSectionGroup({
   const [collapsed, setCollapsed] = useState(false);
 
   const criticalCount = alerts.filter((a) => a.status === "critical").length;
-  const warningCount  = alerts.filter((a) => a.status === "warning").length;
+  const warningCount = alerts.filter((a) => a.status === "warning").length;
 
   if (alerts.length === 0) return null;
 
@@ -180,7 +208,7 @@ function AlertSectionGroup({
             <p className="text-xs text-gray-500">
               {alerts.length} notification{alerts.length !== 1 ? "s" : ""}
               {criticalCount > 0 && <span className="ml-2 text-red-600 font-medium">• {criticalCount} critical</span>}
-              {warningCount  > 0 && <span className="ml-1 text-yellow-600 font-medium">• {warningCount} warning{warningCount > 1 ? "s" : ""}</span>}
+              {warningCount > 0 && <span className="ml-1 text-yellow-600 font-medium">• {warningCount} warning{warningCount > 1 ? "s" : ""}</span>}
             </p>
           </div>
         </div>
@@ -189,16 +217,15 @@ function AlertSectionGroup({
             {alerts.map((a) => (
               <span
                 key={a.id}
-                className={`w-2 h-2 rounded-full ${
-                  a.status === "critical" ? "bg-red-500" :
-                  a.status === "warning"  ? "bg-yellow-400" : "bg-green-500"
-                }`}
+                className={`w-2 h-2 rounded-full ${a.status === "critical" ? "bg-red-500" :
+                    a.status === "warning" ? "bg-yellow-400" : "bg-green-500"
+                  }`}
               />
             ))}
           </div>
           {collapsed
             ? <ChevronDown className="w-5 h-5 text-gray-400" />
-            : <ChevronUp   className="w-5 h-5 text-gray-400" />}
+            : <ChevronUp className="w-5 h-5 text-gray-400" />}
         </div>
       </button>
 
@@ -305,7 +332,7 @@ export function Alerts() {
 
     dbAlerts.forEach(a => {
       const type = a.type === "CRITICAL" ? "critical" : a.type === "WARNING" ? "warning" : "normal";
-      
+
       let sectionKey = "general";
       let icon = AlertCircle;
 
@@ -355,13 +382,13 @@ export function Alerts() {
     setRestoredCount(0);
     // Real app would fetch resolved, but here we just re-fetch active ones or undo
     // For simplicity, we just trigger a refetch of all active if we want to restore some mock state
-    fetchAlerts(); 
+    fetchAlerts();
   }
 
   const allAlerts = sectionsWithAlerts.flatMap((s) => s.alerts);
   const criticalCount = allAlerts.filter((a) => a.status === "critical").length;
-  const warningCount  = allAlerts.filter((a) => a.status === "warning").length;
-  const normalCount   = allAlerts.filter((a) => a.status === "normal").length;
+  const warningCount = allAlerts.filter((a) => a.status === "warning").length;
+  const normalCount = allAlerts.filter((a) => a.status === "normal").length;
 
   if (loading) {
     return <div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
@@ -427,12 +454,12 @@ export function Alerts() {
       {/* ── Sectioned Alerts ── */}
       <div className="space-y-6">
         {allAlerts.length === 0 ? (
-           <Card>
-           <CardContent className="py-16 text-center">
-             <CheckCircle className="w-12 h-12 text-green-300 mx-auto mb-4" />
-             <p className="text-gray-500 font-medium">All clear! No active alerts right now.</p>
-           </CardContent>
-         </Card>
+          <Card>
+            <CardContent className="py-16 text-center">
+              <CheckCircle className="w-12 h-12 text-green-300 mx-auto mb-4" />
+              <p className="text-gray-500 font-medium">All clear! No active alerts right now.</p>
+            </CardContent>
+          </Card>
         ) : (
           sectionsWithAlerts.map((section) => (
             <AlertSectionGroup

@@ -70,7 +70,7 @@ export function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-green-50 via-white to-green-50 flex-1 flex items-center" style={{minHeight: 'calc(100vh - 73px)'}}>
+      <section className="relative overflow-hidden bg-gradient-to-br from-green-50 via-white to-green-50 flex-1 flex items-center" style={{ minHeight: 'calc(100vh - 73px)' }}>
         <div className="container mx-auto px-4 py-16 md:py-24 w-full">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
@@ -88,7 +88,7 @@ export function Landing() {
                 <Button size="lg" className="text-lg px-8" onClick={() => navigate("/app")}>
                   Get Started
                 </Button>
-                <Button size="lg" variant="outline" className="text-lg px-8">
+                <Button size="lg" variant="outline" className="text-lg px-8" onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}>
                   Contact Us
                 </Button>
               </div>
@@ -233,7 +233,7 @@ export function Landing() {
                 </li>
               </ul>
             </div>
-            <div>
+            <div id="contact">
               <h4 className="text-white font-semibold mb-4">Contact</h4>
               <ul className="space-y-2 text-sm">
                 <li>
