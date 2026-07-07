@@ -34,10 +34,10 @@ export async function seedDatabaseIfEmpty(zoneId: string) {
 
     for (const sensor of sensors as DbSensor[]) {
       let currentValue = randomBetween(sensor.minThreshold + 5, sensor.maxThreshold - 5);
-      
+
       for (let i = 24; i >= 0; i -= 3) {
         const time = new Date(now.getTime() - i * 60 * 60 * 1000);
-        
+
         // Add some random walk to the value
         const spread = (sensor.maxThreshold - sensor.minThreshold) * 0.1;
         currentValue += randomBetween(-spread, spread);
@@ -86,6 +86,34 @@ export async function seedDatabaseIfEmpty(zoneId: string) {
     // Insert Alerts
     if (alerts.length > 0) {
       await supabase.from("Alert").insert(alerts);
+    }
+
+    // 5. Generate some mock Crop Records
+    const cropRecords = [
+      {
+        batchName: "Batch A1",
+        strain: "OG Kush",
+        plantedDate: new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+        harvestDate: null,
+        status: "FLOWERING",
+        yield: null,
+        notes: "Healthy growth, transition to flower successful."
+      },
+      {
+        batchName: "Batch B2",
+        strain: "Sour Diesel",
+        plantedDate: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+        harvestDate: null,
+        status: "VEGETATIVE",
+        yield: null,
+        notes: "Rapid vegetative growth observed."
+      }
+    ];
+
+    try {
+      await supabase.from("CropRecord").insert(cropRecords);
+    } catch (e) {
+      console.warn("CropRecord table might be missing:", e);
     }
 
     console.log("Database seeded successfully.");

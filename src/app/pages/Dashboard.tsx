@@ -15,18 +15,19 @@ import {
 } from "recharts";
 import { Droplets, Thermometer, Wind, Cloud, TrendingUp, AlertTriangle, Loader2 } from "lucide-react";
 import { useAuth } from "../components/AuthProvider";
-import { supabase, DbFarm, DbSensor, DbSensorReading, DbAlert } from "../../lib/supabase";
+import { supabase, DbFarm, DbSensor, DbSensorReading, DbAlert, DbCropRecord } from "../../lib/supabase";
 import { getOrCreateDefaultFarm } from "../../lib/farmUtils";
 import { seedDatabaseIfEmpty } from "../../lib/seedData";
 
 export function Dashboard() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
-  
+
   const [farm, setFarm] = useState<DbFarm | null>(null);
   const [sensors, setSensors] = useState<(DbSensor & { lastValue?: number })[]>([]);
   const [criticalAlerts, setCriticalAlerts] = useState<DbAlert[]>([]);
-  
+  const [cropRecords, setCropRecords] = useState<DbCropRecord[]>([]);
+
   const [moistureChartData, setMoistureChartData] = useState<any[]>([]);
   const [tempHumidChartData, setTempHumidChartData] = useState<any[]>([]);
 
@@ -40,7 +41,7 @@ export function Dashboard() {
       // 1. Get Farm & Zone
       const data = await getOrCreateDefaultFarm(user!.id);
       if (!data) return;
-      
+
       setFarm(data.farm);
 
 
@@ -52,7 +53,7 @@ export function Dashboard() {
         .from("Sensor")
         .select("*")
         .eq("zoneId", data.zone.id);
-        
+
       if (sensorData) setSensors(sensorData as (DbSensor & { lastValue?: number })[]);
 
 
@@ -87,6 +88,23 @@ export function Dashboard() {
         if (alertsData) setCriticalAlerts(alertsData);
       }
 
+      // 6. Fetch Crop Records
+      try {
+        const { data: recordsData, error: recordsError } = await supabase
+          .from("CropRecord")
+          .select("*")
+          .order("createdAt", { ascending: false })
+          .limit(5);
+
+        if (recordsError) {
+          console.warn("Could not fetch crop records (table might be missing):", recordsError);
+        } else if (recordsData) {
+          setCropRecords(recordsData as DbCropRecord[]);
+        }
+      } catch (e) {
+        console.warn("CropRecord fetch failed:", e);
+      }
+
       setLoading(false);
     }
 
@@ -108,13 +126,13 @@ export function Dashboard() {
           const newReading = payload.new as DbSensorReading;
           if (sensorIds.has(newReading.sensorId)) {
             // Update sensor lastValue in state
-            setSensors(prev => prev.map(s => 
+            setSensors(prev => prev.map(s =>
               s.id === newReading.sensorId ? { ...s, lastValue: newReading.value } : s
             ));
-            
+
             // Append to chart data if it's within the last hour or so
             const timeLabel = new Date(newReading.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
+
             // This is a bit simplified, but helps show live updates
             const sensor = sensors.find(s => s.id === newReading.sensorId);
             if (sensor?.type === "SOIL_MOISTURE") {
@@ -123,14 +141,14 @@ export function Dashboard() {
               setTempHumidChartData(prev => {
                 const last = prev[prev.length - 1];
                 if (last && last.time === timeLabel) {
-                  return [...prev.slice(0, -1), { 
-                    ...last, 
+                  return [...prev.slice(0, -1), {
+                    ...last,
                     temp: sensor.type === "TEMPERATURE" ? newReading.value : last.temp,
                     humidity: sensor.type === "HUMIDITY" ? newReading.value : last.humidity
                   }];
                 }
-                return [...prev.slice(-19), { 
-                  time: timeLabel, 
+                return [...prev.slice(-19), {
+                  time: timeLabel,
                   temp: sensor.type === "TEMPERATURE" ? newReading.value : undefined,
                   humidity: sensor.type === "HUMIDITY" ? newReading.value : undefined
                 }];
@@ -175,7 +193,7 @@ export function Dashboard() {
       if (!sensor) return;
 
       const timeLabel = new Date(reading.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      
+
       if (!timeMap[timeLabel]) {
         timeMap[timeLabel] = { time: timeLabel, timestamp: new Date(reading.timestamp).getTime() };
       }
@@ -259,7 +277,7 @@ export function Dashboard() {
 
   return (
     <div className="p-4 lg:p-8 space-y-6 relative">
-      
+
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-xl z-50 animate-in fade-in slide-in-from-top-5">
@@ -434,27 +452,88 @@ export function Dashboard() {
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <button 
+            <button
               onClick={() => showToast("Feeding & Nutrients irrigation activated for Flowering Room A.")}
               className="w-full p-4 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-left"
             >
               <div className="font-semibold">Trigger Feeding Cycle</div>
               <div className="text-sm opacity-90">Activate nutrient drip feed</div>
             </button>
-            <button 
+            <button
               onClick={() => showToast("Grow room photoperiod cycle is configured to 12/12 bloom schedule.")}
               className="w-full p-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors text-left"
             >
               <div className="font-semibold">Adjust Light Photoperiod</div>
               <div className="text-sm opacity-90">Manage 12/12 or 18/6 light schedule</div>
             </button>
-            <button 
+            <button
               onClick={() => showToast("Cultivation log and environmental metrics report generated successfully.")}
               className="w-full p-4 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-left"
             >
               <div className="font-semibold">Export Crop Log & Yield Data</div>
               <div className="text-sm opacity-90">Download full batch analytics</div>
             </button>
+          </CardContent>
+        </Card>
+
+        {/* Recent Cultivation Batches Section */}
+        <Card className="lg:col-span-3">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Recent Cultivation Batches</CardTitle>
+              <p className="text-sm text-gray-600">Overview of the latest batches in progress</p>
+            </div>
+            <a href="/app/records" className="text-sm text-primary hover:underline font-medium">View all records</a>
+          </CardHeader>
+          <CardContent>
+            {cropRecords.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3">Batch Name</th>
+                      <th className="px-4 py-3">Strain</th>
+                      <th className="px-4 py-3">Planted</th>
+                      <th className="px-4 py-3">Status</th>
+                      <th className="px-4 py-3 text-right">Yield</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cropRecords.map((record) => (
+                      <tr key={record.id} className="bg-white border-b hover:bg-gray-50">
+                        <td className="px-4 py-4 font-medium text-gray-900">{record.batchName}</td>
+                        <td className="px-4 py-4">{record.strain}</td>
+                        <td className="px-4 py-4">
+                          {new Date(record.plantedDate).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${record.status === 'SEEDLING' ? 'bg-emerald-100 text-emerald-800' :
+                            record.status === 'VEGETATIVE' ? 'bg-green-100 text-green-800' :
+                              record.status === 'FLOWERING' ? 'bg-purple-100 text-purple-800' :
+                                record.status === 'HARVESTED' ? 'bg-gray-100 text-gray-700' :
+                                  'bg-blue-100 text-blue-800'
+                            }`}>
+                            {record.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 text-right font-medium">
+                          {record.yield ? `${record.yield} kg` : "--"}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                <p className="text-gray-400">No cultivation records found. Start your first batch in the Records tab.</p>
+                <a href="/app/records">
+                  <button className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                    Add New Batch
+                  </button>
+                </a>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

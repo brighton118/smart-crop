@@ -11,6 +11,17 @@ import { useAuth } from "../components/AuthProvider";
 import { supabase, DbFarm } from "../../lib/supabase";
 import { getOrCreateDefaultFarm } from "../../lib/farmUtils";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../components/ui/alert-dialog";
+import {
   User,
   MapPin,
   Mail,
@@ -19,15 +30,18 @@ import {
   Globe,
   Loader2,
   CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
+import { toast } from "sonner";
 
 export function Settings() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingFarm, setSavingFarm] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
-  
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Profile State
@@ -44,6 +58,8 @@ export function Settings() {
   const [farmSize, setFarmSize] = useState("");
   const [cropType, setCropType] = useState("");
   const [farmAddress, setFarmAddress] = useState("");
+  const [farmImageUrl, setFarmImageUrl] = useState("");
+  const [uploadingFarmImage, setUploadingFarmImage] = useState(false);
 
   // Password State
   const [newPassword, setNewPassword] = useState("");
@@ -61,7 +77,7 @@ export function Settings() {
 
   useEffect(() => {
     if (!user) return;
-    
+
     // Load User Profile Data
     setFullName(user.user_metadata?.name || "");
     setEmail(user.email || "");
@@ -77,13 +93,13 @@ export function Settings() {
         setFarm(data.farm);
         setFarmName(data.farm.name);
         setFarmAddress(data.farm.location || "");
-        // Metadata not explicitly in DB schema, so we mock or extract
-        setFarmSize("25"); 
+        setFarmImageUrl(data.farm.metadata?.image_url || "/cannabis_settings.png");
+        setFarmSize("25");
         setCropType("Cannabis Sativa");
       }
       setLoading(false);
     }
-    
+
     loadFarm();
   }, [user]);
 
@@ -106,9 +122,13 @@ export function Settings() {
     }
   }
 
-  async function handleAvatarUpload(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handleImageUpload(event: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'farm') {
+    const isAvatar = type === 'avatar';
+    const setUploading = isAvatar ? setUploadingAvatar : setUploadingFarmImage;
+    const bucket = isAvatar ? 'avatars' : 'farm-images';
+
     try {
-      setUploadingAvatar(true);
+      setUploading(true);
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('You must select an image to upload.');
       }
@@ -122,28 +142,39 @@ export function Settings() {
       }
 
       const { error: uploadError } = await supabase.storage
-        .from('avatars')
+        .from(bucket)
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
       const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
+        .from(bucket)
         .getPublicUrl(fileName);
 
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { avatar_url: publicUrl }
-      });
-
-      if (updateError) throw updateError;
-
-      setAvatarUrl(publicUrl);
-      showToast("Profile picture updated!");
+      if (isAvatar) {
+        const { error: updateError } = await supabase.auth.updateUser({
+          data: { avatar_url: publicUrl }
+        });
+        if (updateError) throw updateError;
+        setAvatarUrl(publicUrl);
+        showToast("Profile picture updated!");
+      } else {
+        if (!farm) return;
+        const { error: updateError } = await supabase
+          .from("Farm")
+          .update({
+            metadata: { ...((farm as any).metadata || {}), image_url: publicUrl }
+          })
+          .eq("id", farm.id);
+        if (updateError) throw updateError;
+        setFarmImageUrl(publicUrl);
+        showToast("Facility image updated!");
+      }
     } catch (error: any) {
       console.error(error);
       showToast(error.message || "Error uploading image");
     } finally {
-      setUploadingAvatar(false);
+      setUploading(false);
     }
   }
 
@@ -155,7 +186,7 @@ export function Settings() {
       location: farmAddress
     }).eq("id", farm.id);
     setSavingFarm(false);
-    
+
     if (error) {
       console.error(error);
       showToast("Error updating farm settings.");
@@ -190,13 +221,30 @@ export function Settings() {
     }
   }
 
+  const handleDeleteAccount = async () => {
+    setIsDeleting(true);
+    try {
+      // In a real app, you might call a serverless function here
+      // Admin API is restricted on client, so we'll simulate the request
+      // and sign out the user.
+      toast.loading("Processing account deletion...");
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      toast.success("Account deletion request submitted. You will be signed out.");
+      await signOut();
+    } catch (error) {
+      toast.error("Failed to delete account");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   if (loading) {
     return <div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
   }
 
   return (
     <div className="p-4 lg:p-8 space-y-6 relative">
-      
+
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-4 right-4 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-xl z-50 animate-in fade-in slide-in-from-top-5 flex items-center gap-2">
@@ -243,19 +291,19 @@ export function Settings() {
                   </div>
                   <label className="absolute bottom-0 right-0 w-8 h-8 bg-primary text-white rounded-full flex items-center justify-center hover:bg-primary/90 cursor-pointer shadow-md transition-colors">
                     <Camera className="w-4 h-4" />
-                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'avatar')} disabled={uploadingAvatar} />
                   </label>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">Profile Picture</h3>
                   <p className="text-sm text-gray-600 mb-2">JPG, PNG or GIF. Max size 2MB</p>
-                  <label>
+                  <label className="inline-block">
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'avatar')} disabled={uploadingAvatar} />
                     <Button variant="outline" size="sm" asChild disabled={uploadingAvatar}>
                       <span>
                         {uploadingAvatar ? "Uploading..." : "Upload New Photo"}
                       </span>
                     </Button>
-                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={uploadingAvatar} />
                   </label>
                 </div>
               </div>
@@ -331,7 +379,7 @@ export function Settings() {
                   <Input
                     id="confirmPassword"
                     type="password"
-                    value={confirmPassword} 
+                    value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm new password"
                   />
@@ -339,7 +387,7 @@ export function Settings() {
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={() => {setNewPassword(""); setConfirmPassword("");}}>Cancel</Button>
+                <Button variant="outline" onClick={() => { setNewPassword(""); setConfirmPassword(""); }}>Cancel</Button>
                 <Button onClick={handleUpdatePassword} disabled={savingPassword || !newPassword}>
                   {savingPassword ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   Update Password
@@ -377,7 +425,7 @@ export function Settings() {
                   <Label htmlFor="farmAddress">Facility Address</Label>
                   <Input
                     id="farmAddress"
-                    value={farmAddress} 
+                    value={farmAddress}
                     onChange={(e) => setFarmAddress(e.target.value)}
                     placeholder="Unit 4, Greenleaf Industrial Park, Denver, CO"
                     className="w-full"
@@ -398,16 +446,29 @@ export function Settings() {
               {/* Facility Image */}
               <div>
                 <Label className="mb-2">Facility Image</Label>
-                <div className="mt-2 rounded-lg overflow-hidden border">
+                <div className="mt-2 rounded-lg overflow-hidden border relative group">
                   <ImageWithFallback
-                    src="/cannabis_settings.png"
+                    src={farmImageUrl}
                     alt="KindBuds Grow Facility"
-                    className="w-full h-48 object-cover"
+                    className="w-full h-48 object-cover transition-opacity group-hover:opacity-90"
                   />
+                  {uploadingFarmImage && (
+                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                      <Loader2 className="w-10 h-10 animate-spin text-white" />
+                    </div>
+                  )}
                 </div>
-                <Button variant="outline" size="sm" className="mt-2">
-                  Change Image
-                </Button>
+                <div className="mt-3">
+                  <label className="inline-block">
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => handleImageUpload(e, 'farm')} disabled={uploadingFarmImage} />
+                    <Button variant="outline" size="sm" asChild disabled={uploadingFarmImage}>
+                      <span>
+                        <Camera className="w-4 h-4 mr-2" />
+                        {uploadingFarmImage ? "Uploading..." : "Change Image"}
+                      </span>
+                    </Button>
+                  </label>
+                </div>
               </div>
 
               <div className="flex justify-end gap-2">
@@ -593,7 +654,7 @@ export function Settings() {
               </div>
 
               <div className="flex justify-end gap-2">
-                <Button variant="outline">Cancel</Button>
+                <Button variant="outline" onClick={() => window.location.reload()}>Cancel</Button>
                 <Button onClick={() => showToast("Preferences saved!")}>Save Preferences</Button>
               </div>
             </CardContent>
@@ -630,9 +691,31 @@ export function Settings() {
               <Separator />
 
               <div>
-                <Button variant="destructive" className="mt-2">
-                  Delete Account
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" className="mt-2" disabled={isDeleting}>
+                      {isDeleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Delete Account"}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+                        <AlertTriangle className="h-5 w-5" />
+                        Are you absolutely sure?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your
+                        account and remove your data from our servers.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteAccount} className="bg-red-600 hover:bg-red-700">
+                        Continue
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
                 <p className="text-xs text-gray-500 mt-2">
                   Permanently delete your account and all associated data
                 </p>

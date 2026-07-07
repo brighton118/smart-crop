@@ -116,18 +116,22 @@ enum AlertStatus {
 }
 
 model CropRecord {
-  id          String     @id @default(uuid())
-  batchName   String
-  strain      String
-  plantedDate DateTime   @default(now())
-  harvestDate DateTime?
-  status      CropStatus @default(GROWING)
-  yield       Float?     // in grams or kg
-  zoneId      String
-  zone        Zone       @relation(fields: [zoneId], references: [id])
-  notes       String?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id            String     @id @default(uuid())
+  batchName     String
+  strain        String
+  plantedDate   DateTime   @default(now())
+  harvestDate   DateTime?
+  status        CropStatus @default(GROWING)
+  yield         Float?     // in grams or kg
+  seedCount     Int?
+  cloneCount    Int?
+  harvestWeight Float?
+  recordType    String     @default("SEED")
+  zoneId        String
+  zone          Zone       @relation(fields: [zoneId], references: [id])
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 }
 
 enum CropStatus {

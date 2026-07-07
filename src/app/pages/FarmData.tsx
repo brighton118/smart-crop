@@ -11,7 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "../components/ui/table";
-import { Search, Download, Calendar, Filter, Loader2 } from "lucide-react";
+import { Search, Download, Calendar, Filter, Loader2, X } from "lucide-react";
 import { useAuth } from "../components/AuthProvider";
 import { supabase, DbSensor, DbSensorReading } from "../../lib/supabase";
 import { getOrCreateDefaultFarm } from "../../lib/farmUtils";
@@ -27,11 +27,29 @@ interface FarmDataEntry {
   status: "normal" | "warning" | "critical";
 }
 
+const PAGE_SIZE = 20;
+
 export function FarmData() {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [farmData, setFarmData] = useState<FarmDataEntry[]>([]);
+
+  // Date Range state
+  const [showDateRange, setShowDateRange] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+
+  // Status Filter state
+  const [showStatusFilter, setShowStatusFilter] = useState(false);
+  const [statusFilters, setStatusFilters] = useState<Record<string, boolean>>({
+    normal: true,
+    warning: true,
+    critical: true,
+  });
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     if (!user) return;
@@ -52,7 +70,7 @@ export function FarmData() {
       }
 
       const sensorIds = sensors.map(s => s.id);
-      
+
       const { data: readings } = await supabase
         .from("SensorReading")
         .select("*")
@@ -69,7 +87,6 @@ export function FarmData() {
   }, [user]);
 
   function processReadings(allSensors: DbSensor[], allReadings: DbSensorReading[]) {
-    // Group readings by hour to mimic the table structure
     const timeMap: Record<string, FarmDataEntry> = {};
 
     allReadings.forEach(reading => {
@@ -77,7 +94,6 @@ export function FarmData() {
       if (!sensor) return;
 
       const d = new Date(reading.timestamp);
-      // Group by nearest hour roughly (just truncating to hour)
       d.setMinutes(0, 0, 0);
       const timeKey = d.getTime().toString();
 
@@ -98,10 +114,8 @@ export function FarmData() {
       if (sensor.type === "TEMPERATURE") timeMap[timeKey].temperature = reading.value;
       if (sensor.type === "HUMIDITY") timeMap[timeKey].humidity = reading.value;
 
-      // Determine status roughly based on thresholds
       const isWarn = reading.value < sensor.minThreshold || reading.value > sensor.maxThreshold;
       if (isWarn) {
-        // Simple logic: if any reading is out of bounds, mark the hour as warning (or critical if extreme)
         const isExtreme = reading.value < (sensor.minThreshold - 5) || reading.value > (sensor.maxThreshold + 5);
         if (isExtreme) timeMap[timeKey].status = "critical";
         else if (timeMap[timeKey].status !== "critical") timeMap[timeKey].status = "warning";
@@ -136,11 +150,42 @@ export function FarmData() {
     }
   };
 
-  const filteredData = farmData.filter(
-    (entry) =>
+  // Apply all filters
+  const filteredData = farmData.filter((entry) => {
+    // Text search
+    const matchesSearch =
       entry.date.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      entry.time.toLowerCase().includes(searchQuery.toLowerCase())
+      entry.time.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Date range filter
+    let matchesDateRange = true;
+    if (dateFrom) {
+      const fromTs = new Date(dateFrom).getTime();
+      matchesDateRange = entry.timestamp >= fromTs;
+    }
+    if (dateTo && matchesDateRange) {
+      const toTs = new Date(dateTo).getTime() + 86400000; // end of day
+      matchesDateRange = entry.timestamp <= toTs;
+    }
+
+    // Status filter
+    const matchesStatus = statusFilters[entry.status];
+
+    return matchesSearch && matchesDateRange && matchesStatus;
+  });
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedData = filteredData.slice(
+    (safeCurrentPage - 1) * PAGE_SIZE,
+    safeCurrentPage * PAGE_SIZE
   );
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, dateFrom, dateTo, statusFilters]);
 
   function exportCSV() {
     const headers = ["Date", "Time", "Soil Moisture (%)", "Temperature (°C)", "Humidity (%)", "Status"];
@@ -162,7 +207,7 @@ export function FarmData() {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.setAttribute("href", url);
-    a.setAttribute("download", `farm_data_${new Date().toISOString().slice(0,10)}.csv`);
+    a.setAttribute("download", `farm_data_${new Date().toISOString().slice(0, 10)}.csv`);
     a.click();
   }
 
@@ -170,7 +215,7 @@ export function FarmData() {
   const totalMoisture = farmData.reduce((acc, r) => acc + (r.soilMoisture || 0), 0);
   const totalTemp = farmData.reduce((acc, r) => acc + (r.temperature || 0), 0);
   const totalHumidity = farmData.reduce((acc, r) => acc + (r.humidity || 0), 0);
-  
+
   const moistureCount = farmData.filter(r => r.soilMoisture !== null).length;
   const tempCount = farmData.filter(r => r.temperature !== null).length;
   const humidityCount = farmData.filter(r => r.humidity !== null).length;
@@ -178,6 +223,16 @@ export function FarmData() {
   const avgMoisture = moistureCount ? (totalMoisture / moistureCount).toFixed(1) : "--";
   const avgTemp = tempCount ? (totalTemp / tempCount).toFixed(1) : "--";
   const avgHumidity = humidityCount ? (totalHumidity / humidityCount).toFixed(1) : "--";
+
+  function toggleStatusFilter(status: string) {
+    setStatusFilters(prev => ({ ...prev, [status]: !prev[status] }));
+  }
+
+  function clearDateRange() {
+    setDateFrom("");
+    setDateTo("");
+    setShowDateRange(false);
+  }
 
   if (loading) {
     return <div className="p-8 flex justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>;
@@ -240,21 +295,87 @@ export function FarmData() {
                 />
               </div>
 
-              {/* Filter Buttons */}
-              <Button variant="outline" size="default">
+              {/* Date Range Button */}
+              <Button
+                variant={dateFrom || dateTo ? "default" : "outline"}
+                size="default"
+                onClick={() => { setShowDateRange(!showDateRange); setShowStatusFilter(false); }}
+              >
                 <Calendar className="w-4 h-4 mr-2" />
                 Date Range
+                {(dateFrom || dateTo) && (
+                  <span className="ml-1 w-2 h-2 bg-white rounded-full inline-block" />
+                )}
               </Button>
-              <Button variant="outline" size="default">
+
+              {/* Filter Button */}
+              <Button
+                variant={Object.values(statusFilters).some(v => !v) ? "default" : "outline"}
+                size="default"
+                onClick={() => { setShowStatusFilter(!showStatusFilter); setShowDateRange(false); }}
+              >
                 <Filter className="w-4 h-4 mr-2" />
                 Filter
+                {Object.values(statusFilters).some(v => !v) && (
+                  <span className="ml-1 w-2 h-2 bg-white rounded-full inline-block" />
+                )}
               </Button>
+
               <Button variant="outline" size="default" onClick={exportCSV}>
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </Button>
             </div>
           </div>
+
+          {/* Date Range Panel */}
+          {showDateRange && (
+            <div className="mt-3 p-4 bg-gray-50 rounded-lg border flex flex-wrap items-end gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-600">From</label>
+                <Input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="w-40 bg-white"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-gray-600">To</label>
+                <Input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="w-40 bg-white"
+                />
+              </div>
+              {(dateFrom || dateTo) && (
+                <Button variant="ghost" size="sm" onClick={clearDateRange} className="text-red-600 hover:text-red-700">
+                  <X className="w-4 h-4 mr-1" /> Clear
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Status Filter Panel */}
+          {showStatusFilter && (
+            <div className="mt-3 p-4 bg-gray-50 rounded-lg border flex flex-wrap items-center gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
+              <span className="text-xs font-medium text-gray-600">Show status:</span>
+              {(["normal", "warning", "critical"] as const).map((status) => (
+                <label key={status} className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={statusFilters[status]}
+                    onChange={() => toggleStatusFilter(status)}
+                    className="rounded border-gray-300"
+                  />
+                  <span className={`text-sm capitalize ${status === "critical" ? "text-red-600" :
+                      status === "warning" ? "text-yellow-600" : "text-green-600"
+                    }`}>{status}</span>
+                </label>
+              ))}
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -270,7 +391,7 @@ export function FarmData() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredData.map((entry) => (
+                {paginatedData.map((entry) => (
                   <TableRow key={entry.id} className={getStatusColor(entry.status)}>
                     <TableCell className="font-medium">{entry.date}</TableCell>
                     <TableCell>{entry.time}</TableCell>
@@ -290,20 +411,33 @@ export function FarmData() {
 
           {filteredData.length === 0 && (
             <div className="text-center py-12 text-gray-500">
-              No records found matching your search.
+              No records found matching your filters.
             </div>
           )}
 
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4 pt-4 border-t">
             <p className="text-sm text-gray-600">
-              Showing {filteredData.length} of {farmData.length} records
+              Showing {paginatedData.length > 0 ? ((safeCurrentPage - 1) * PAGE_SIZE) + 1 : 0}–{Math.min(safeCurrentPage * PAGE_SIZE, filteredData.length)} of {filteredData.length} records
             </p>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" disabled>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={safeCurrentPage <= 1}
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              >
                 Previous
               </Button>
-              <Button variant="outline" size="sm" disabled>
+              <span className="text-sm text-gray-600 px-2">
+                Page {safeCurrentPage} of {totalPages}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={safeCurrentPage >= totalPages}
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              >
                 Next
               </Button>
             </div>

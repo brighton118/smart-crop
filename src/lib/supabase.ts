@@ -73,6 +73,7 @@ export interface DbFarm {
   name: string;
   location: string | null;
   userId: string;
+  metadata?: any;
   createdAt: string;
   updatedAt: string;
 }
@@ -87,6 +88,8 @@ export interface DbCropRecord {
   harvestDate: string | null;
   status: CropStatus;
   yield: number | null;
+  seedCount: number | null;
+  harvestWeight: number | null;
   zoneId: string;
   notes: string | null;
   createdAt: string;
