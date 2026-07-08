@@ -1,0 +1,172 @@
+﻿Γùç injected env (4) from .env // tip: Γîÿ enable debugging { debug: true }
+DATABASE_URL: postgresql://postgres:Kato0788945330@db.iyddixaifxxmkeourdve.supabase.co:5432/postgres
+Trying to query User table...
+prisma:error 
+Invalid `prisma.user.findMany()` invocation in
+C:\Users\User\Desktop\smartCrop\backend\src\test-conn.ts:24:41
+
+  21 console.log("DATABASE_URL:", process.env.DATABASE_URL);
+  22 try {
+  23     console.log("Trying to query User table...");
+ΓåÆ 24     const users = await prisma.user.findMany(
+Can't reach database server at db.iyddixaifxxmkeourdve.supabase.co
+node.exe : Connection 
+failed: PrismaClientKn
+ownRequestError: 
+At line:1 char:1
++ & "C:\Program Files\
+nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Connection   
+  fail...nRequestE    
+rror: :String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+Invalid `prisma.user.f
+indMany()` invocation 
+in
+C:\Users\User\Desktop\
+smartCrop\backend\src\
+test-conn.ts:24:41
+
+  21 console.log("DATA
+BASE_URL:", process.en
+v.DATABASE_URL);
+  22 try {
+  23     
+console.log("Trying 
+to query User 
+table...");
+ΓåÆ 24     const 
+users = await 
+prisma.user.findMany(
+Can't reach database 
+server at db.iyddixaif
+xxmkeourdve.supabase.c
+o
+    at 
+zr.handleRequestError 
+(C:\Users\User\Desktop
+\smartCrop\backend\nod
+e_modules\@prisma\clie
+nt\src\runtime\Request
+Handler.ts:237:13)
+    at zr.handleAndLog
+RequestError (C:\Users
+\User\Desktop\smartCro
+p\backend\node_modules
+\@prisma\client\src\ru
+ntime\RequestHandler.t
+s:183:12)
+    at zr.request (C:\
+Users\User\Desktop\sma
+rtCrop\backend\node_mo
+dules\@prisma\client\s
+rc\runtime\RequestHand
+ler.ts:152:12)
+    at processTicksAnd
+Rejections (node:inter
+nal/process/task_queue
+s:104:5)
+    at async a (C:\Use
+rs\User\Desktop\smartC
+rop\backend\node_modul
+es\@prisma\client\src\
+runtime\getPrismaClien
+t.ts:963:24)
+    at async main (C:\
+Users\User\Desktop\sma
+rtCrop\backend\src\tes
+t-conn.ts:24:23) {
+  code: 'P1001',
+  meta: {
+    modelName: 'User',
+    
+driverAdapterError: 
+DriverAdapterError: 
+DatabaseNotReachable
+        at PrismaPgAda
+pter.onError (C:\Users
+\User\Desktop\smartCro
+p\backend\node_modules
+\@prisma\adapter-pg\di
+st\index.js:678:11)
+        at PrismaPgAda
+pter.performIO (C:\Use
+rs\User\Desktop\smartC
+rop\backend\node_modul
+es\@prisma\adapter-pg\
+dist\index.js:673:12)
+        at processTick
+sAndRejections (node:i
+nternal/process/task_q
+ueues:104:5)
+        at async Prism
+aPgAdapter.queryRaw (C
+:\Users\User\Desktop\s
+martCrop\backend\node_
+modules\@prisma\adapte
+r-pg\dist\index.js:604
+:30)
+        at async o (C:
+\Users\User\Desktop\sm
+artCrop\backend\node_m
+odules\@prisma\client-
+engine-runtime\src\tra
+cing.ts:66:26)
+        at async 
+e.interpretNode (C:\Us
+ers\User\Desktop\smart
+Crop\backend\node_modu
+les\@prisma\client-eng
+ine-runtime\src\interp
+reter\query-interprete
+r.ts:186:26)
+        at async 
+e.interpretNode (C:\Us
+ers\User\Desktop\smart
+Crop\backend\node_modu
+les\@prisma\client-eng
+ine-runtime\src\interp
+reter\query-interprete
+r.ts:272:41)
+        at async 
+e.run (C:\Users\User\D
+esktop\smartCrop\backe
+nd\node_modules\@prism
+a\client-engine-runtim
+e\src\interpreter\quer
+y-interpreter.ts:94:23
+)
+        at async 
+execute (C:\Users\User
+\Desktop\smartCrop\bac
+kend\node_modules\@pri
+sma\client\src\runtime
+\core\engines\client\L
+ocalExecutor.ts:81:12)
+        at async 
+jt.request (C:\Users\U
+ser\Desktop\smartCrop\
+backend\node_modules\@
+prisma\client\src\runt
+ime\core\engines\clien
+t\ClientEngine.ts:504:
+22) {
+      cause: [Object]
+    }
+  },
+  clientVersion: 
+'7.8.0'
+}

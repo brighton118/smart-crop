@@ -1,0 +1,379 @@
+﻿Γùç injected env (4) from .env // tip: Γîÿ custom filepath { path: '/custom/path/.env' }
+node : prisma:client 
+clientVersion 7.8.0 
++381ms
+At line:1 char:1
++ node 
+test-conn-js.js > test
+_conn_out_js_7.log 
+2>&1; Get-Content 
+test_ ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (prisma:cli   
+ ent clientVersion    
+ 7.8.0 +381ms:Str    
+ing) [], RemoteEx    
+ception
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+prisma:client:clientEn
+gine Using driver 
+adapter: '{\n' +
+  '  "provider": 
+"postgres",\n' +
+  '  "adapterName": "@
+prisma/adapter-pg",\n'
+ +
+  '  "config": {\n' +
+  '    
+"connectionString": "p
+ostgresql://postgres.i
+yddixaifxxmkeourdve:Ka
+to0788945330@aws-0-eu-
+west-1.pooler.supabase
+.com:5432/postgres",\n
+' +
+  '    "ssl": {\n' +
+  '      
+"rejectUnauthorized": 
+false\n' +
+  '    },\n' +
+  '    "max": 10,\n' +
+  '    "min": 0,\n' +
+  '    "maxUses": 
+null,\n' +
+  '    
+"allowExitOnIdle": 
+false,\n' +
+  '    
+"maxLifetimeSeconds": 
+0,\n' +
+  '    
+"idleTimeoutMillis": 
+10000\n' +
+  '  },\n' +
+  '  "externalPool": 
+{\n' +
+  '    "_events": 
+{},\n' +
+  '    
+"_eventsCount": 0,\n' 
++
+  '    "options": 
+"[Circular *]",\n' +
+  '    "_clients": 
+[],\n' +
+  '    "_idle": 
+[],\n' +
+  '    "_expired": 
+{},\n' +
+  '    
+"_pendingQueue": 
+[],\n' +
+  '    "ending": 
+false,\n' +
+  '    "ended": 
+false\n' +
+  '  }\n' +
+  '}' +3ms
+DATABASE_URL: postgresql://postgres.iyddixaifxxmkeourdve:Kato0788945330@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require
+Calling $connect...
+$connect succeeded!
+Upserting missing users for orphaned farms...
+prisma:client prisma.$
+queryRawUnsafe(
+            INSERT 
+INTO "User" (id, 
+email, role, 
+"createdAt", 
+"updatedAt")
+            VALUES ('2
+9bb318e-f656-40d0-91d5
+-58fea445450c', 'orpha
+ned-29bb318e@example.c
+om', 'GROWER', NOW(), 
+NOW())
+            ON 
+CONFLICT (id) DO 
+NOTHING
+        , []) +140ms
+prisma:client Prisma 
+Client call: +2ms
+prisma:client prisma.$
+queryRawUnsafe({
+  query: "\n          
+  INSERT INTO 
+\"User\" (id, email, 
+role, \"createdAt\", 
+\"updatedAt\")\n      
+      VALUES ('29bb318
+e-f656-40d0-91d5-58fea
+445450c', 'orphaned-29
+bb318e@example.com', 
+'GROWER', NOW(), 
+NOW())\n            
+ON CONFLICT (id) DO 
+NOTHING\n        ",
+  parameters: {
+    values: "[]",
+    __prismaRawParamet
+ers__: true
+  }
+}) +2ms
+prisma:client 
+Generated request: 
++1ms
+prisma:client {
+  "action": 
+"queryRaw",
+  "query": {
+    "arguments": {
+      "query": "\n    
+        INSERT INTO 
+\"User\" (id, email, 
+role, \"createdAt\", 
+\"updatedAt\")\n      
+      VALUES ('29bb318
+e-f656-40d0-91d5-58fea
+445450c', 'orphaned-29
+bb318e@example.com', 
+'GROWER', NOW(), 
+NOW())\n            
+ON CONFLICT (id) DO 
+NOTHING\n        ",
+      "parameters": 
+"[]"
+    },
+    "selection": {}
+  }
+}
+ +0ms
+prisma:client:clientEn
+gine sending request 
++1ms
+prisma:client:clientEn
+gine query plan 
+created {
+  "type": "query",
+  "args": {
+    "type": "rawSql",
+    "sql": "\n        
+    INSERT INTO 
+\"User\" (id, email, 
+role, \"createdAt\", 
+\"updatedAt\")\n      
+      VALUES ('29bb318
+e-f656-40d0-91d5-58fea
+445450c', 'orphaned-29
+bb318e@example.com', 
+'GROWER', NOW(), 
+NOW())\n            
+ON CONFLICT (id) DO 
+NOTHING\n        ",
+    "args": [],
+    "argTypes": []
+  }
+} +0ms
+prisma:driver-adapter:
+pg [js::query_raw] 
+'{\n' +
+  `  "sql": "\\n      
+      INSERT INTO 
+\\"User\\" (id, 
+email, role, 
+\\"createdAt\\", 
+\\"updatedAt\\")\\n   
+         VALUES ('29bb
+318e-f656-40d0-91d5-58
+fea445450c', 'orphaned
+-29bb318e@example.com'
+, 'GROWER', NOW(), 
+NOW())\\n            
+ON CONFLICT (id) DO 
+NOTHING\\n        
+",\n` +
+  '  "args": [],\n' +
+  '  "argTypes": 
+[]\n' +
+  '}' +336ms
+prisma:driver-adapter:
+pg Error in 
+performIO: '{\n' +
+  '  "length": 
+100,\n' +
+  '  "name": 
+"error",\n' +
+  '  "severity": 
+"ERROR",\n' +
+  '  "code": 
+"22P02",\n' +
+  '  "position": 
+"170",\n' +
+  '  "file": 
+"enum.c",\n' +
+  '  "line": 
+"129",\n' +
+  '  "routine": 
+"enum_in"\n' +
+  '}' +1783ms
+prisma:client:request_
+handler {
+  "code": "P2010",
+  "meta": {
+    
+"driverAdapterError": 
+{
+      "name": 
+"DriverAdapterError",
+      "cause": {
+        
+"originalCode": 
+"22P02",
+        
+"originalMessage": 
+"invalid input value 
+for enum \"Role\": 
+\"GROWER\"",
+        "kind": 
+"InvalidInputValue",
+        "message": 
+"invalid input value 
+for enum \"Role\": 
+\"GROWER\""
+      }
+    }
+  },
+  "clientVersion": 
+"7.8.0",
+  "name": "PrismaClien
+tKnownRequestError"
+} +1787ms
+Calling disconnect...
+disconnect succeeded!
+Pool ended!
+Connection failed: Pri
+smaClientKnownRequestE
+rror: 
+Invalid `prisma.$query
+RawUnsafe()` 
+invocation:
+
+
+Raw query failed. 
+Code: `22P02`. 
+Message: `invalid 
+input value for enum 
+"Role": "GROWER"`
+    at 
+zr.handleRequestError 
+(C:\Users\User\Desktop
+\smartCrop\backend\nod
+e_modules\@prisma\clie
+nt\runtime\client.js:6
+5:8286)
+    at zr.handleAndLog
+RequestError (C:\Users
+\User\Desktop\smartCro
+p\backend\node_modules
+\@prisma\client\runtim
+e\client.js:65:7581)
+    at zr.request (C:\
+Users\User\Desktop\sma
+rtCrop\backend\node_mo
+dules\@prisma\client\r
+untime\client.js:65:72
+88)
+    at process.process
+TicksAndRejections (no
+de:internal/process/ta
+sk_queues:104:5)
+    at async a (C:\Use
+rs\User\Desktop\smartC
+rop\backend\node_modul
+es\@prisma\client\runt
+ime\client.js:75:6862)
+    at async main (C:\
+Users\User\Desktop\sma
+rtCrop\backend\test-co
+nn-js.js:36:13) {
+  code: 'P2010',
+  meta: {
+    
+driverAdapterError: 
+DriverAdapterError: 
+invalid input value 
+for enum "Role": 
+"GROWER"
+        at PrismaPgAda
+pter.onError (C:\Users
+\User\Desktop\smartCro
+p\backend\node_modules
+\@prisma\adapter-pg\di
+st\index.js:678:11)
+        at PrismaPgAda
+pter.performIO (C:\Use
+rs\User\Desktop\smartC
+rop\backend\node_modul
+es\@prisma\adapter-pg\
+dist\index.js:673:12)
+        at process.pro
+cessTicksAndRejections
+ (node:internal/proces
+s/task_queues:104:5)
+        at async Prism
+aPgAdapter.queryRaw (C
+:\Users\User\Desktop\s
+martCrop\backend\node_
+modules\@prisma\adapte
+r-pg\dist\index.js:604
+:30)
+        at async 
+e.interpretNode (C:\Us
+ers\User\Desktop\smart
+Crop\backend\node_modu
+les\@prisma\client\run
+time\client.js:11:4462
+1)
+        at async 
+e.run (C:\Users\User\D
+esktop\smartCrop\backe
+nd\node_modules\@prism
+a\client\runtime\clien
+t.js:11:43335)
+        at async 
+e.execute (C:\Users\Us
+er\Desktop\smartCrop\b
+ackend\node_modules\@p
+risma\client\runtime\c
+lient.js:57:815)
+        at async 
+jt.request (C:\Users\U
+ser\Desktop\smartCrop\
+backend\node_modules\@
+prisma\client\runtime\
+client.js:58:2401)
+        at async 
+Object.singleLoader (C
+:\Users\User\Desktop\s
+martCrop\backend\node_
+modules\@prisma\client
+\runtime\client.js:65:
+6569)
+        at async 
+zr.request (C:\Users\U
+ser\Desktop\smartCrop\
+backend\node_modules\@
+prisma\client\runtime\
+client.js:65:7175) {
+      cause: [Object]
+    }
+  },
+  clientVersion: 
+'7.8.0'
+}

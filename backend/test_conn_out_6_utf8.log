@@ -1,0 +1,132 @@
+﻿Γùç injected env (4) from .env // tip: Γîü auth for agents [www.vestauth.com]
+DATABASE_URL: postgresql://postgres.iyddixaifxxmkeourdve:Kato0788945330@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require
+Trying to query User table...
+prisma:query SELECT "public"."User"."id", "public"."User"."email", "public"."User"."name", "public"."User"."password", "public"."User"."role"::text, "public"."User"."createdAt", "public"."User"."updatedAt" FROM "public"."User" WHERE 1=1 OFFSET $1
+Users found: [
+  {
+    id: 'dc3fc684-3287-4704-8d37-277a56c8e77f',
+    email: 'brightonkato317@gmail.com',
+    name: 'Kato Brighton',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-04-24T09:36:47.278Z,
+    updatedAt: 2026-04-24T09:36:47.278Z
+  },
+  {
+    id: 'be028130-094a-41c9-aaec-ebb29fea3534',
+    email: 'farmer@gmail.com',
+    name: 'prince',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-04-24T09:50:01.077Z,
+    updatedAt: 2026-04-24T09:50:01.077Z
+  },
+  {
+    id: '3426995f-d1d4-4133-a4e0-39c7866bb8b5',
+    email: 'p@gmail.com',
+    name: 'prince',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-05-14T14:39:29.459Z,
+    updatedAt: 2026-05-14T14:39:29.459Z
+  },
+  {
+    id: '7b92dc42-b083-49ca-a761-174f475f6a42',
+    email: 'jhan@gmail.com',
+    name: 'jhan',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-05-14T15:27:45.999Z,
+    updatedAt: 2026-05-14T15:27:45.999Z
+  },
+  {
+    id: 'c451a587-97d7-4c61-84e5-64de399fae26',
+    email: 'keth@gmail.com',
+    name: 'keth',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-05-14T17:31:50.822Z,
+    updatedAt: 2026-05-14T17:31:50.822Z
+  },
+  {
+    id: '6e9b8908-dea4-463c-bca8-f92b339ebad1',
+    email: 'mukundanemedard9@gmail.com',
+    name: 'Mukundane  medard',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-05-14T17:48:51.547Z,
+    updatedAt: 2026-05-14T17:48:51.547Z
+  },
+  {
+    id: '1a80f84c-ed6b-491a-a823-b0d03e5574b4',
+    email: 'aryamanyalucky49@gmail.com',
+    name: 'Aryamanya Lucky ',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-05-14T17:51:33.590Z,
+    updatedAt: 2026-05-14T17:51:33.590Z
+  },
+  {
+    id: '3041ce0d-22a1-4d99-9c32-e2b1a828516a',
+    email: 'invan@gmail.com',
+    name: 'Ivan ',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-05-14T18:38:16.434Z,
+    updatedAt: 2026-05-14T18:38:16.434Z
+  },
+  {
+    id: '69fccf8a-354a-4035-8bbb-0c8302aa49d2',
+    email: 'ranchoema02@gmail.com',
+    name: 'Emma Wolimbwa ',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-05-15T08:26:33.877Z,
+    updatedAt: 2026-05-15T08:26:33.877Z
+  },
+  {
+    id: 'cb6803c7-4bc2-4918-b410-d3f9863c1d1d',
+    email: '2024bcs004@std.must.ac.ug',
+    name: 'Kemigisha Sandrah',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-05-15T08:29:46.238Z,
+    updatedAt: 2026-05-15T08:29:46.238Z
+  },
+  {
+    id: 'a30f225d-5d5b-4836-878b-1dc70338c30b',
+    email: '2024bcs218@std.must.ac.ug',
+    name: 'TUMUSIIME HERBERT ',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-05-15T12:37:43.158Z,
+    updatedAt: 2026-05-15T12:37:43.158Z
+  },
+  {
+    id: '373bbb14-8cd1-40df-975a-bb51c643d3f1',
+    email: 'prospermusinguzi54@gmail.com',
+    name: 'Musinguzi Prosper',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-06-18T09:23:08.440Z,
+    updatedAt: 2026-06-18T09:23:08.440Z
+  },
+  {
+    id: '9b999da4-d65d-4922-b032-bf32a3e54c2e',
+    email: 'tomowembabazi2004@gmail.com',
+    name: 'Tom',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-07-01T05:53:21.624Z,
+    updatedAt: 2026-07-01T05:53:21.624Z
+  },
+  {
+    id: 'f1e3f234-6aad-4650-8746-c9e263e41ef3',
+    email: 'herberttumusiime08@gmail.com',
+    name: 'HERBERT',
+    password: 'MANAGED_BY_SUPABASE_AUTH',
+    role: 'FARMER',
+    createdAt: 2026-07-08T10:02:52.232Z,
+    updatedAt: 2026-07-08T10:02:52.232Z
+  }
+]

@@ -1,0 +1,191 @@
+﻿Γùç injected env (4) from .env // tip: Γùê secrets for agents [www.dotenvx.com]
+node : prisma:client 
+clientVersion 7.8.0 
++662ms
+At line:1 char:1
++ node 
+test-conn-js.js > test
+_conn_out_js_5.log 
+2>&1; Get-Content 
+test_ ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (prisma:cli   
+ ent clientVersion    
+ 7.8.0 +662ms:Str    
+ing) [], RemoteEx    
+ception
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+prisma:client:clientEn
+gine Using driver 
+adapter: '{\n' +
+  '  "provider": 
+"postgres",\n' +
+  '  "adapterName": "@
+prisma/adapter-pg",\n'
+ +
+  '  "config": {\n' +
+  '    
+"connectionString": "p
+ostgresql://postgres.i
+yddixaifxxmkeourdve:Ka
+to0788945330@aws-0-eu-
+west-1.pooler.supabase
+.com:5432/postgres",\n
+' +
+  '    "ssl": {\n' +
+  '      
+"rejectUnauthorized": 
+false\n' +
+  '    },\n' +
+  '    "max": 10,\n' +
+  '    "min": 0,\n' +
+  '    "maxUses": 
+null,\n' +
+  '    
+"allowExitOnIdle": 
+false,\n' +
+  '    
+"maxLifetimeSeconds": 
+0,\n' +
+  '    
+"idleTimeoutMillis": 
+10000\n' +
+  '  },\n' +
+  '  "externalPool": 
+{\n' +
+  '    "_events": 
+{},\n' +
+  '    
+"_eventsCount": 0,\n' 
++
+  '    "options": 
+"[Circular *]",\n' +
+  '    "_clients": 
+[],\n' +
+  '    "_idle": 
+[],\n' +
+  '    "_expired": 
+{},\n' +
+  '    
+"_pendingQueue": 
+[],\n' +
+  '    "ending": 
+false,\n' +
+  '    "ended": 
+false\n' +
+  '  }\n' +
+  '}' +6ms
+DATABASE_URL: postgresql://postgres.iyddixaifxxmkeourdve:Kato0788945330@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require
+Calling $connect...
+$connect succeeded!
+Checking orphaned farms...
+prisma:client prisma.$
+queryRawUnsafe(SELECT 
+f.id, f."userId" FROM 
+"Farm" f LEFT JOIN 
+"User" u ON 
+f."userId" = u.id 
+WHERE u.id IS NULL, 
+[]) +897ms
+prisma:client Prisma 
+Client call: +5ms
+prisma:client prisma.$
+queryRawUnsafe({
+  query: "SELECT 
+f.id, f.\"userId\" 
+FROM \"Farm\" f LEFT 
+JOIN \"User\" u ON 
+f.\"userId\" = u.id 
+WHERE u.id IS NULL",
+  parameters: {
+    values: "[]",
+    __prismaRawParamet
+ers__: true
+  }
+}) +2ms
+prisma:client 
+Generated request: 
++1ms
+prisma:client {
+  "action": 
+"queryRaw",
+  "query": {
+    "arguments": {
+      "query": 
+"SELECT f.id, 
+f.\"userId\" FROM 
+\"Farm\" f LEFT JOIN 
+\"User\" u ON 
+f.\"userId\" = u.id 
+WHERE u.id IS NULL",
+      "parameters": 
+"[]"
+    },
+    "selection": {}
+  }
+}
+ +0ms
+prisma:client:clientEn
+gine sending request 
++29ms
+prisma:client:clientEn
+gine query plan 
+created {
+  "type": "query",
+  "args": {
+    "type": "rawSql",
+    "sql": "SELECT 
+f.id, f.\"userId\" 
+FROM \"Farm\" f LEFT 
+JOIN \"User\" u ON 
+f.\"userId\" = u.id 
+WHERE u.id IS NULL",
+    "args": [],
+    "argTypes": []
+  }
+} +19ms
+prisma:driver-adapter:
+pg [js::query_raw] 
+'{\n' +
+  '  "sql": "SELECT 
+f.id, f.\\"userId\\" 
+FROM \\"Farm\\" f 
+LEFT JOIN \\"User\\" 
+u ON f.\\"userId\\" = 
+u.id WHERE u.id IS 
+NULL",\n' +
+  '  "args": [],\n' +
+  '  "argTypes": 
+[]\n' +
+  '}' +1463ms
+prisma:client:clientEn
+gine query plan 
+executed +4548ms
+Orphaned farms: [
+  {
+    id: '84078046-6e1f-4483-bb17-b644d3d7a37e',
+    userId: '29bb318e-f656-40d0-91d5-58fea445450c'
+  },
+  {
+    id: '8db1dc48-df10-4d37-82dc-2af7cfe9d1e7',
+    userId: 'c5fe0e97-2e48-4579-a4d6-2606a5f55955'
+  },
+  {
+    id: '98d21c97-c40a-4f73-84b0-32aceaf767f6',
+    userId: '0e18af9e-967b-4678-a7f5-f3965c953c66'
+  },
+  {
+    id: '0296168b-0b00-442d-90db-8229ed40f953',
+    userId: 'b70e1353-bb88-42ae-a41d-e1002ac54cce'
+  }
+]
+Calling disconnect...
+disconnect succeeded!
+Pool ended!

@@ -1,0 +1,975 @@
+﻿Γùç injected env (4) from .env // tip: Γîÿ custom filepath { path: '/custom/path/.env' }
+node : prisma:client 
+clientVersion 7.8.0 
++283ms
+At line:1 char:1
++ node 
+test-conn-js.js > test
+_conn_out_js_10.log 
+2>&1; Get-Content 
+test ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (prisma:cli   
+ ent clientVersion    
+ 7.8.0 +283ms:Str    
+ing) [], RemoteEx    
+ception
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+prisma:client:clientEn
+gine Using driver 
+adapter: '{\n' +
+  '  "provider": 
+"postgres",\n' +
+  '  "adapterName": "@
+prisma/adapter-pg",\n'
+ +
+  '  "config": {\n' +
+  '    
+"connectionString": "p
+ostgresql://postgres.i
+yddixaifxxmkeourdve:Ka
+to0788945330@aws-0-eu-
+west-1.pooler.supabase
+.com:5432/postgres",\n
+' +
+  '    "ssl": {\n' +
+  '      
+"rejectUnauthorized": 
+false\n' +
+  '    },\n' +
+  '    "max": 10,\n' +
+  '    "min": 0,\n' +
+  '    "maxUses": 
+null,\n' +
+  '    
+"allowExitOnIdle": 
+false,\n' +
+  '    
+"maxLifetimeSeconds": 
+0,\n' +
+  '    
+"idleTimeoutMillis": 
+10000\n' +
+  '  },\n' +
+  '  "externalPool": 
+{\n' +
+  '    "_events": 
+{},\n' +
+  '    
+"_eventsCount": 0,\n' 
++
+  '    "options": 
+"[Circular *]",\n' +
+  '    "_clients": 
+[],\n' +
+  '    "_idle": 
+[],\n' +
+  '    "_expired": 
+{},\n' +
+  '    
+"_pendingQueue": 
+[],\n' +
+  '    "ending": 
+false,\n' +
+  '    "ended": 
+false\n' +
+  '  }\n' +
+  '}' +1ms
+DATABASE_URL: postgresql://postgres.iyddixaifxxmkeourdve:Kato0788945330@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require
+Calling $connect...
+$connect succeeded!
+Checking record counts...
+prisma:client Prisma 
+Client call: +198ms
+prisma:client 
+prisma.user.count({
+  select: {
+    _count: {
+      select: {
+        _all: true
+      }
+    }
+  }
+}) +1ms
+prisma:client 
+Generated request: 
++0ms
+prisma:client {
+  "modelName": "User",
+  "action": 
+"aggregate",
+  "query": {
+    "arguments": {},
+    "selection": {
+      "_count": {
+        "arguments": 
+{},
+        "selection": {
+          "_all": true
+        }
+      }
+    }
+  }
+}
+ +1ms
+prisma:client:clientEn
+gine sending request 
++1ms
+prisma:client:clientEn
+gine query plan cache 
+miss +1ms
+prisma:client:clientEn
+gine query plan 
+created {
+  "type": "dataMap",
+  "args": {
+    "expr": {
+      "type": 
+"unique",
+      "args": {
+        "type": 
+"query",
+        "args": {
+          "type": 
+"templateSql",
+          
+"fragments": [
+            {
+              "type": 
+"stringChunk",
+              
+"chunk": "SELECT 
+COUNT(*) AS 
+\"_count$_all\" FROM 
+(SELECT \"public\".\"U
+ser\".\"id\" FROM 
+\"public\".\"User\" 
+WHERE 1=1 OFFSET "
+            },
+            {
+              "type": 
+"parameter"
+            },
+            {
+              "type": 
+"stringChunk",
+              
+"chunk": ") AS 
+\"sub\""
+            }
+          ],
+          "args": [
+            "0"
+          ],
+          "argTypes": 
+[
+            {
+              
+"arity": "scalar",
+              
+"scalarType": 
+"bigint",
+              
+"dbType": null
+            }
+          ],
+          
+"placeholderFormat": {
+            "prefix": 
+"$",
+            
+"hasNumbering": true
+          },
+          
+"chunkable": false
+        }
+      }
+    },
+    "structure": {
+      "type": 
+"object",
+      
+"serializedName": 
+null,
+      "fields": {
+        "_count": {
+          "type": 
+"object",
+          
+"serializedName": 
+null,
+          "fields": {
+            "_all": {
+              "type": 
+"field",
+              
+"dbName": 
+"_count$_all",
+              
+"fieldType": {
+                
+"arity": "required",
+                
+"type": "int"
+              }
+            }
+          },
+          
+"skipNulls": false
+        }
+      },
+      "skipNulls": 
+false
+    },
+    "enums": {}
+  }
+} +83ms
+prisma:driver-adapter:
+pg [js::query_raw] 
+'{\n' +
+  '  "sql": "SELECT 
+COUNT(*) AS 
+\\"_count$_all\\" 
+FROM (SELECT \\"public
+\\".\\"User\\".\\"id\\
+" FROM \\"public\\".\\
+"User\\" WHERE 1=1 
+OFFSET $1) AS 
+\\"sub\\"",\n' +
+  '  "args": [\n' +
+  '    "0"\n' +
+  '  ],\n' +
+  '  "argTypes": [\n' 
++
+  '    {\n' +
+  '      "arity": 
+"scalar",\n' +
+  '      
+"scalarType": 
+"bigint",\n' +
+  '      "dbType": 
+null\n' +
+  '    }\n' +
+  '  ]\n' +
+  '}' +444ms
+prisma:client:clientEn
+gine query plan 
+executed +1659ms
+prisma:client Prisma 
+Client call: +2ms
+prisma:client 
+prisma.farm.count({
+  select: {
+    _count: {
+      select: {
+        _all: true
+      }
+    }
+  }
+}) +1ms
+prisma:client 
+Generated request: 
++0ms
+prisma:client {
+  "modelName": "Farm",
+  "action": 
+"aggregate",
+  "query": {
+    "arguments": {},
+    "selection": {
+      "_count": {
+        "arguments": 
+{},
+        "selection": {
+          "_all": true
+        }
+      }
+    }
+  }
+}
+ +0ms
+prisma:client:clientEn
+gine sending request 
++0ms
+prisma:client:clientEn
+gine query plan cache 
+miss +1ms
+prisma:client:clientEn
+gine query plan 
+created {
+  "type": "dataMap",
+  "args": {
+    "expr": {
+      "type": 
+"unique",
+      "args": {
+        "type": 
+"query",
+        "args": {
+          "type": 
+"templateSql",
+          
+"fragments": [
+            {
+              "type": 
+"stringChunk",
+              
+"chunk": "SELECT 
+COUNT(*) AS 
+\"_count$_all\" FROM 
+(SELECT \"public\".\"F
+arm\".\"id\" FROM 
+\"public\".\"Farm\" 
+WHERE 1=1 OFFSET "
+            },
+            {
+              "type": 
+"parameter"
+            },
+            {
+              "type": 
+"stringChunk",
+              
+"chunk": ") AS 
+\"sub\""
+            }
+          ],
+          "args": [
+            "0"
+          ],
+          "argTypes": 
+[
+            {
+              
+"arity": "scalar",
+              
+"scalarType": 
+"bigint",
+              
+"dbType": null
+            }
+          ],
+          
+"placeholderFormat": {
+            "prefix": 
+"$",
+            
+"hasNumbering": true
+          },
+          
+"chunkable": false
+        }
+      }
+    },
+    "structure": {
+      "type": 
+"object",
+      
+"serializedName": 
+null,
+      "fields": {
+        "_count": {
+          "type": 
+"object",
+          
+"serializedName": 
+null,
+          "fields": {
+            "_all": {
+              "type": 
+"field",
+              
+"dbName": 
+"_count$_all",
+              
+"fieldType": {
+                
+"arity": "required",
+                
+"type": "int"
+              }
+            }
+          },
+          
+"skipNulls": false
+        }
+      },
+      "skipNulls": 
+false
+    },
+    "enums": {}
+  }
+} +1ms
+prisma:driver-adapter:
+pg [js::query_raw] 
+'{\n' +
+  '  "sql": "SELECT 
+COUNT(*) AS 
+\\"_count$_all\\" 
+FROM (SELECT \\"public
+\\".\\"Farm\\".\\"id\\
+" FROM \\"public\\".\\
+"Farm\\" WHERE 1=1 
+OFFSET $1) AS 
+\\"sub\\"",\n' +
+  '  "args": [\n' +
+  '    "0"\n' +
+  '  ],\n' +
+  '  "argTypes": [\n' 
++
+  '    {\n' +
+  '      "arity": 
+"scalar",\n' +
+  '      
+"scalarType": 
+"bigint",\n' +
+  '      "dbType": 
+null\n' +
+  '    }\n' +
+  '  ]\n' +
+  '}' +1657ms
+prisma:client:clientEn
+gine query plan 
+executed +183ms
+prisma:client Prisma 
+Client call: +1ms
+prisma:client 
+prisma.zone.count({
+  select: {
+    _count: {
+      select: {
+        _all: true
+      }
+    }
+  }
+}) +1ms
+prisma:client 
+Generated request: 
++0ms
+prisma:client {
+  "modelName": "Zone",
+  "action": 
+"aggregate",
+  "query": {
+    "arguments": {},
+    "selection": {
+      "_count": {
+        "arguments": 
+{},
+        "selection": {
+          "_all": true
+        }
+      }
+    }
+  }
+}
+ +0ms
+prisma:client:clientEn
+gine sending request 
++0ms
+prisma:client:clientEn
+gine query plan cache 
+miss +1ms
+prisma:client:clientEn
+gine query plan 
+created {
+  "type": "dataMap",
+  "args": {
+    "expr": {
+      "type": 
+"unique",
+      "args": {
+        "type": 
+"query",
+        "args": {
+          "type": 
+"templateSql",
+          
+"fragments": [
+            {
+              "type": 
+"stringChunk",
+              
+"chunk": "SELECT 
+COUNT(*) AS 
+\"_count$_all\" FROM 
+(SELECT \"public\".\"Z
+one\".\"id\" FROM 
+\"public\".\"Zone\" 
+WHERE 1=1 OFFSET "
+            },
+            {
+              "type": 
+"parameter"
+            },
+            {
+              "type": 
+"stringChunk",
+              
+"chunk": ") AS 
+\"sub\""
+            }
+          ],
+          "args": [
+            "0"
+          ],
+          "argTypes": 
+[
+            {
+              
+"arity": "scalar",
+              
+"scalarType": 
+"bigint",
+              
+"dbType": null
+            }
+          ],
+          
+"placeholderFormat": {
+            "prefix": 
+"$",
+            
+"hasNumbering": true
+          },
+          
+"chunkable": false
+        }
+      }
+    },
+    "structure": {
+      "type": 
+"object",
+      
+"serializedName": 
+null,
+      "fields": {
+        "_count": {
+          "type": 
+"object",
+          
+"serializedName": 
+null,
+          "fields": {
+            "_all": {
+              "type": 
+"field",
+              
+"dbName": 
+"_count$_all",
+              
+"fieldType": {
+                
+"arity": "required",
+                
+"type": "int"
+              }
+            }
+          },
+          
+"skipNulls": false
+        }
+      },
+      "skipNulls": 
+false
+    },
+    "enums": {}
+  }
+} +1ms
+prisma:driver-adapter:
+pg [js::query_raw] 
+'{\n' +
+  '  "sql": "SELECT 
+COUNT(*) AS 
+\\"_count$_all\\" 
+FROM (SELECT \\"public
+\\".\\"Zone\\".\\"id\\
+" FROM \\"public\\".\\
+"Zone\\" WHERE 1=1 
+OFFSET $1) AS 
+\\"sub\\"",\n' +
+  '  "args": [\n' +
+  '    "0"\n' +
+  '  ],\n' +
+  '  "argTypes": [\n' 
++
+  '    {\n' +
+  '      "arity": 
+"scalar",\n' +
+  '      
+"scalarType": 
+"bigint",\n' +
+  '      "dbType": 
+null\n' +
+  '    }\n' +
+  '  ]\n' +
+  '}' +188ms
+prisma:client:clientEn
+gine query plan 
+executed +185ms
+prisma:client Prisma 
+Client call: +1ms
+prisma:client 
+prisma.sensor.count({
+  select: {
+    _count: {
+      select: {
+        _all: true
+      }
+    }
+  }
+}) +1ms
+prisma:client 
+Generated request: 
++0ms
+prisma:client {
+  "modelName": 
+"Sensor",
+  "action": 
+"aggregate",
+  "query": {
+    "arguments": {},
+    "selection": {
+      "_count": {
+        "arguments": 
+{},
+        "selection": {
+          "_all": true
+        }
+      }
+    }
+  }
+}
+ +0ms
+prisma:client:clientEn
+gine sending request 
++0ms
+prisma:client:clientEn
+gine query plan cache 
+miss +1ms
+prisma:client:clientEn
+gine query plan 
+created {
+  "type": "dataMap",
+  "args": {
+    "expr": {
+      "type": 
+"unique",
+      "args": {
+        "type": 
+"query",
+        "args": {
+          "type": 
+"templateSql",
+          
+"fragments": [
+            {
+              "type": 
+"stringChunk",
+              
+"chunk": "SELECT 
+COUNT(*) AS 
+\"_count$_all\" FROM 
+(SELECT \"public\".\"S
+ensor\".\"id\" FROM 
+\"public\".\"Sensor\" 
+WHERE 1=1 OFFSET "
+            },
+            {
+              "type": 
+"parameter"
+            },
+            {
+              "type": 
+"stringChunk",
+              
+"chunk": ") AS 
+\"sub\""
+            }
+          ],
+          "args": [
+            "0"
+          ],
+          "argTypes": 
+[
+            {
+              
+"arity": "scalar",
+              
+"scalarType": 
+"bigint",
+              
+"dbType": null
+            }
+          ],
+          
+"placeholderFormat": {
+            "prefix": 
+"$",
+            
+"hasNumbering": true
+          },
+          
+"chunkable": false
+        }
+      }
+    },
+    "structure": {
+      "type": 
+"object",
+      
+"serializedName": 
+null,
+      "fields": {
+        "_count": {
+          "type": 
+"object",
+          
+"serializedName": 
+null,
+          "fields": {
+            "_all": {
+              "type": 
+"field",
+              
+"dbName": 
+"_count$_all",
+              
+"fieldType": {
+                
+"arity": "required",
+                
+"type": "int"
+              }
+            }
+          },
+          
+"skipNulls": false
+        }
+      },
+      "skipNulls": 
+false
+    },
+    "enums": {}
+  }
+} +1ms
+prisma:driver-adapter:
+pg [js::query_raw] 
+'{\n' +
+  '  "sql": "SELECT 
+COUNT(*) AS 
+\\"_count$_all\\" 
+FROM (SELECT \\"public
+\\".\\"Sensor\\".\\"id
+\\" FROM \\"public\\".
+\\"Sensor\\" WHERE 
+1=1 OFFSET $1) AS 
+\\"sub\\"",\n' +
+  '  "args": [\n' +
+  '    "0"\n' +
+  '  ],\n' +
+  '  "argTypes": [\n' 
++
+  '    {\n' +
+  '      "arity": 
+"scalar",\n' +
+  '      
+"scalarType": 
+"bigint",\n' +
+  '      "dbType": 
+null\n' +
+  '    }\n' +
+  '  ]\n' +
+  '}' +188ms
+prisma:client:clientEn
+gine query plan 
+executed +185ms
+prisma:client Prisma 
+Client call: +1ms
+prisma:client prisma.c
+ropRecord.count({
+  select: {
+    _count: {
+      select: {
+        _all: true
+      }
+    }
+  }
+}) +0ms
+prisma:client 
+Generated request: 
++1ms
+prisma:client {
+  "modelName": 
+"CropRecord",
+  "action": 
+"aggregate",
+  "query": {
+    "arguments": {},
+    "selection": {
+      "_count": {
+        "arguments": 
+{},
+        "selection": {
+          "_all": true
+        }
+      }
+    }
+  }
+}
+ +0ms
+prisma:client:clientEn
+gine sending request 
++0ms
+prisma:client:clientEn
+gine query plan cache 
+miss +0ms
+prisma:client:clientEn
+gine query plan 
+created {
+  "type": "dataMap",
+  "args": {
+    "expr": {
+      "type": 
+"unique",
+      "args": {
+        "type": 
+"query",
+        "args": {
+          "type": 
+"templateSql",
+          
+"fragments": [
+            {
+              "type": 
+"stringChunk",
+              
+"chunk": "SELECT 
+COUNT(*) AS 
+\"_count$_all\" FROM 
+(SELECT \"public\".\"C
+ropRecord\".\"id\" 
+FROM \"public\".\"Crop
+Record\" WHERE 1=1 
+OFFSET "
+            },
+            {
+              "type": 
+"parameter"
+            },
+            {
+              "type": 
+"stringChunk",
+              
+"chunk": ") AS 
+\"sub\""
+            }
+          ],
+          "args": [
+            "0"
+          ],
+          "argTypes": 
+[
+            {
+              
+"arity": "scalar",
+              
+"scalarType": 
+"bigint",
+              
+"dbType": null
+            }
+          ],
+          
+"placeholderFormat": {
+            "prefix": 
+"$",
+            
+"hasNumbering": true
+          },
+          
+"chunkable": false
+        }
+      }
+    },
+    "structure": {
+      "type": 
+"object",
+      
+"serializedName": 
+null,
+      "fields": {
+        "_count": {
+          "type": 
+"object",
+          
+"serializedName": 
+null,
+          "fields": {
+            "_all": {
+              "type": 
+"field",
+              
+"dbName": 
+"_count$_all",
+              
+"fieldType": {
+                
+"arity": "required",
+                
+"type": "int"
+              }
+            }
+          },
+          
+"skipNulls": false
+        }
+      },
+      "skipNulls": 
+false
+    },
+    "enums": {}
+  }
+} +1ms
+prisma:driver-adapter:
+pg [js::query_raw] 
+'{\n' +
+  '  "sql": "SELECT 
+COUNT(*) AS 
+\\"_count$_all\\" 
+FROM (SELECT \\"public
+\\".\\"CropRecord\\".\
+\"id\\" FROM \\"public
+\\".\\"CropRecord\\" 
+WHERE 1=1 OFFSET $1) 
+AS \\"sub\\"",\n' +
+  '  "args": [\n' +
+  '    "0"\n' +
+  '  ],\n' +
+  '  "argTypes": [\n' 
++
+  '    {\n' +
+  '      "arity": 
+"scalar",\n' +
+  '      
+"scalarType": 
+"bigint",\n' +
+  '      "dbType": 
+null\n' +
+  '    }\n' +
+  '  ]\n' +
+  '}' +189ms
+prisma:client:clientEn
+gine query plan 
+executed +194ms
+Record counts: { users: 18, farms: 14, zones: 14, sensors: 7, cropRecords: 2 }
+Calling disconnect...
+disconnect succeeded!
+Pool ended!

@@ -1,0 +1,58 @@
+﻿node.exe : Loaded 
+Prisma config from 
+prisma.config.ts.
+At line:1 char:1
++ & "C:\Program Files\
+nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Loaded Pri   
+ sma c...isma.conf    
+ig.ts.:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+
+Prisma schema loaded 
+from 
+prisma\schema.prisma.
+Datasource "db": PostgreSQL database "postgres", schema "public" at "aws-0-eu-west-1.pooler.supabase.com:5432"
+Error: insert or 
+update on table 
+"Farm" violates 
+foreign key 
+constraint 
+"Farm_userId_fkey"
+   0: sql_schema_conne
+ctor::apply_migration:
+:migration_step
+           with 
+step=AddForeignKey { 
+foreign_key_id: 
+ForeignKeyId(0) }
+             at schema
+-engine\connectors\sql
+-schema-connector\src\
+apply_migration.rs:28
+   1: sql_schema_conne
+ctor::apply_migration:
+:apply_migration
+             at schema
+-engine\connectors\sql
+-schema-connector\src\
+apply_migration.rs:11
+   2: schema_core::sta
+te::SchemaPush
+             at schema
+-engine\core\src\state
+.rs:547
+

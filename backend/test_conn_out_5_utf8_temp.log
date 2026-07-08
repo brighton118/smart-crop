@@ -1,0 +1,61 @@
+﻿Γùç injected env (4) from .env // tip: Γîÿ enable debugging { debug: true }
+DATABASE_URL: postgresql://postgres.iyddixaifxxmkeourdve:Kato0788945330@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require
+Trying to query User table...
+node.exe : 
+(node:8824) Warning: 
+SECURITY WARNING: The 
+SSL modes 'prefer', 
+'require', and 
+'verify-ca' are 
+treated as aliases 
+for 'verify-full'.
+At line:1 char:1
++ & "C:\Program Files\
+nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: ((node:8824   
+ ) War... 'verify-    
+full'.:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+In the next major 
+version 
+(pg-connection-string 
+v3.0.0 and pg 
+v9.0.0), these modes 
+will adopt standard 
+libpq semantics, 
+which have weaker 
+security guarantees.
+
+To prepare for this 
+change:
+- If you want the 
+current behavior, 
+explicitly use 
+'sslmode=verify-full'
+- If you want libpq 
+compatibility now, 
+use 'uselibpqcompat=tr
+ue&sslmode=require'
+
+See https://www.postgr
+esql.org/docs/current/
+libpq-ssl.html for 
+libpq SSL mode 
+definitions.
+(Use `node 
+--trace-warnings ...` 
+to show where the 
+warning was created)

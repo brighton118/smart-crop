@@ -5,7 +5,6 @@
 
 -- ── 1. ENUMS ────────────────────────────────────────────────
 
-CREATE TYPE "Role" AS ENUM ('ADMIN', 'FARMER', 'WORKER');
 
 CREATE TYPE "SensorType" AS ENUM (
   'SOIL_MOISTURE',
@@ -38,7 +37,6 @@ CREATE TABLE "User" (
   "email"     TEXT NOT NULL,
   "name"      TEXT,
   "password"  TEXT NOT NULL,
-  "role"      "Role" NOT NULL DEFAULT 'FARMER',
   "createdAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   CONSTRAINT "User_pkey" PRIMARY KEY ("id")

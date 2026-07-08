@@ -2,13 +2,24 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient } from '@prisma/client';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
 // Load environment variables from backend/.env
 dotenv.config({ path: '.env' });
 
+const connectionString = process.env.DATABASE_URL ? process.env.DATABASE_URL.split('?')[0] : '';
+
+const pool = new Pool({
+  connectionString,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+const adapter = new PrismaPg(pool);
 
 const app = express();
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter });
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());

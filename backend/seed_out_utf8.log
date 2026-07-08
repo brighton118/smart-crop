@@ -1,0 +1,166 @@
+﻿Γùç injected env (4) from .env // tip: Γîÿ custom filepath { path: '/custom/path/.env' }
+Seeding database via Prisma driver adapter...
+Found zone ID: 048198ab-1d1e-4ca7-826e-a41ad330137b. Checking CropRecord count...
+Inserting seed crop records...
+node.exe : Seeding 
+failed: PrismaClientKn
+ownRequestError: 
+At line:1 char:1
++ & "C:\Program Files\
+nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (Seeding fa   
+ iled:...nRequestE    
+rror: :String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+Invalid `prisma.cropRe
+cord.createMany()` 
+invocation in
+C:\Users\User\Desktop\
+smartCrop\backend\src\
+seed-db.ts:45:29
+
+  42 
+  43 console.log("Inse
+rting seed crop 
+records...");
+  44 const now = new 
+Date();
+ΓåÆ 45 await prisma.cr
+opRecord.createMany(
+The column 
+`recordType of 
+relation CropRecord` 
+does not exist in the 
+current database.
+    at 
+zr.handleRequestError 
+(C:\Users\User\Desktop
+\smartCrop\backend\nod
+e_modules\@prisma\clie
+nt\src\runtime\Request
+Handler.ts:237:13)
+    at zr.handleAndLog
+RequestError (C:\Users
+\User\Desktop\smartCro
+p\backend\node_modules
+\@prisma\client\src\ru
+ntime\RequestHandler.t
+s:183:12)
+    at zr.request (C:\
+Users\User\Desktop\sma
+rtCrop\backend\node_mo
+dules\@prisma\client\s
+rc\runtime\RequestHand
+ler.ts:152:12)
+    at processTicksAnd
+Rejections (node:inter
+nal/process/task_queue
+s:104:5)
+    at async a (C:\Use
+rs\User\Desktop\smartC
+rop\backend\node_modul
+es\@prisma\client\src\
+runtime\getPrismaClien
+t.ts:963:24)
+    at async main (C:\
+Users\User\Desktop\sma
+rtCrop\backend\src\see
+d-db.ts:45:5) {
+  code: 'P2022',
+  meta: {
+    modelName: 
+'CropRecord',
+    
+driverAdapterError: 
+DriverAdapterError: 
+ColumnNotFound
+        at 
+PgTransaction.onError 
+(C:\Users\User\Desktop
+\smartCrop\backend\nod
+e_modules\@prisma\adap
+ter-pg\dist\index.js:6
+78:11)
+        at PgTransacti
+on.performIO (C:\Users
+\User\Desktop\smartCro
+p\backend\node_modules
+\@prisma\adapter-pg\di
+st\index.js:673:12)
+        at processTick
+sAndRejections (node:i
+nternal/process/task_q
+ueues:104:5)
+        at async PgTra
+nsaction.executeRaw (C
+:\Users\User\Desktop\s
+martCrop\backend\node_
+modules\@prisma\adapte
+r-pg\dist\index.js:643
+:13)
+        at async 
+e.interpretNode (C:\Us
+ers\User\Desktop\smart
+Crop\backend\node_modu
+les\@prisma\client-eng
+ine-runtime\src\interp
+reter\query-interprete
+r.ts:168:18)
+        at async 
+e.interpretNode (C:\Us
+ers\User\Desktop\smart
+Crop\backend\node_modu
+les\@prisma\client-eng
+ine-runtime\src\interp
+reter\query-interprete
+r.ts:272:41)
+        at async 
+e.interpretNode (C:\Us
+ers\User\Desktop\smart
+Crop\backend\node_modu
+les\@prisma\client-eng
+ine-runtime\src\interp
+reter\query-interprete
+r.ts:262:25)
+        at async 
+e.run (C:\Users\User\D
+esktop\smartCrop\backe
+nd\node_modules\@prism
+a\client-engine-runtim
+e\src\interpreter\quer
+y-interpreter.ts:94:23
+)
+        at async 
+execute (C:\Users\User
+\Desktop\smartCrop\bac
+kend\node_modules\@pri
+sma\client\src\runtime
+\core\engines\client\L
+ocalExecutor.ts:81:12)
+        at async 
+jt.request (C:\Users\U
+ser\Desktop\smartCrop\
+backend\node_modules\@
+prisma\client\src\runt
+ime\core\engines\clien
+t\ClientEngine.ts:504:
+22) {
+      cause: [Object]
+    }
+  },
+  clientVersion: 
+'7.8.0'
+}

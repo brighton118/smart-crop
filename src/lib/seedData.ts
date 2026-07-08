@@ -93,6 +93,7 @@ export async function seedDatabaseIfEmpty(zoneId: string) {
       {
         batchName: "Batch A1",
         strain: "OG Kush",
+        zoneId: zoneId,
         plantedDate: new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000).toISOString(),
         harvestDate: null,
         status: "FLOWERING",
@@ -102,6 +103,7 @@ export async function seedDatabaseIfEmpty(zoneId: string) {
       {
         batchName: "Batch B2",
         strain: "Sour Diesel",
+        zoneId: zoneId,
         plantedDate: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString(),
         harvestDate: null,
         status: "VEGETATIVE",

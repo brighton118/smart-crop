@@ -1,0 +1,529 @@
+﻿Γùç injected env (4) from .env // tip: Γîÿ suppress logs { quiet: true }
+node : prisma:client 
+clientVersion 7.8.0 
++582ms
+At line:1 char:1
++ node 
+test-conn-js.js > test
+_conn_out_js_3.log 
+2>&1; Get-Content 
+test_ ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (prisma:cli   
+ ent clientVersion    
+ 7.8.0 +582ms:Str    
+ing) [], RemoteEx    
+ception
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+prisma:client:clientEn
+gine Using driver 
+adapter: '{\n' +
+  '  "provider": 
+"postgres",\n' +
+  '  "adapterName": "@
+prisma/adapter-pg",\n'
+ +
+  '  "config": {\n' +
+  '    
+"connectionString": "p
+ostgresql://postgres.i
+yddixaifxxmkeourdve:Ka
+to0788945330@aws-0-eu-
+west-1.pooler.supabase
+.com:5432/postgres?ssl
+mode=require",\n' +
+  '    "ssl": {\n' +
+  '      
+"rejectUnauthorized": 
+false\n' +
+  '    },\n' +
+  '    "max": 10,\n' +
+  '    "min": 0,\n' +
+  '    "maxUses": 
+null,\n' +
+  '    
+"allowExitOnIdle": 
+false,\n' +
+  '    
+"maxLifetimeSeconds": 
+0,\n' +
+  '    
+"idleTimeoutMillis": 
+10000\n' +
+  '  },\n' +
+  '  "externalPool": 
+{\n' +
+  '    "_events": 
+{},\n' +
+  '    
+"_eventsCount": 0,\n' 
++
+  '    "options": 
+"[Circular *]",\n' +
+  '    "_clients": 
+[],\n' +
+  '    "_idle": 
+[],\n' +
+  '    "_expired": 
+{},\n' +
+  '    
+"_pendingQueue": 
+[],\n' +
+  '    "ending": 
+false,\n' +
+  '    "ended": 
+false\n' +
+  '  }\n' +
+  '}' +4ms
+DATABASE_URL: postgresql://postgres.iyddixaifxxmkeourdve:Kato0788945330@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require
+Calling $connect...
+$connect succeeded!
+Trying to query User table...
+prisma:client Prisma 
+Client call: +368ms
+prisma:client prisma.u
+ser.findMany() +0ms
+prisma:client 
+Generated request: 
++1ms
+prisma:client {
+  "modelName": "User",
+  "action": 
+"findMany",
+  "query": {
+    "arguments": {},
+    "selection": {
+      "$composites": 
+true,
+      "$scalars": true
+    }
+  }
+}
+ +0ms
+prisma:client:clientEn
+gine sending request 
++2ms
+prisma:client:clientEn
+gine query plan cache 
+miss +1ms
+prisma:client:clientEn
+gine query plan 
+created {
+  "type": "dataMap",
+  "args": {
+    "expr": {
+      "type": "query",
+      "args": {
+        "type": 
+"templateSql",
+        "fragments": [
+          {
+            "type": 
+"stringChunk",
+            "chunk": 
+"SELECT \"public\".\"U
+ser\".\"id\", \"public
+\".\"User\".\"email\",
+ \"public\".\"User\".\
+"name\", \"public\".\"
+User\".\"password\", \
+"public\".\"User\".\"r
+ole\"::text, \"public\
+".\"User\".\"createdAt
+\", \"public\".\"User\
+".\"updatedAt\" FROM 
+\"public\".\"User\" 
+WHERE 1=1 OFFSET "
+          },
+          {
+            "type": 
+"parameter"
+          }
+        ],
+        "args": [
+          "0"
+        ],
+        "argTypes": [
+          {
+            "arity": 
+"scalar",
+            
+"scalarType": 
+"bigint",
+            "dbType": 
+null
+          }
+        ],
+        
+"placeholderFormat": {
+          "prefix": 
+"$",
+          
+"hasNumbering": true
+        },
+        "chunkable": 
+true
+      }
+    },
+    "structure": {
+      "type": 
+"object",
+      
+"serializedName": 
+null,
+      "fields": {
+        "id": {
+          "type": 
+"field",
+          "dbName": 
+"id",
+          
+"fieldType": {
+            "arity": 
+"required",
+            "type": 
+"string"
+          }
+        },
+        "email": {
+          "type": 
+"field",
+          "dbName": 
+"email",
+          
+"fieldType": {
+            "arity": 
+"required",
+            "type": 
+"string"
+          }
+        },
+        "name": {
+          "type": 
+"field",
+          "dbName": 
+"name",
+          
+"fieldType": {
+            "arity": 
+"optional",
+            "type": 
+"string"
+          }
+        },
+        "password": {
+          "type": 
+"field",
+          "dbName": 
+"password",
+          
+"fieldType": {
+            "arity": 
+"required",
+            "type": 
+"string"
+          }
+        },
+        "role": {
+          "type": 
+"field",
+          "dbName": 
+"role",
+          
+"fieldType": {
+            "arity": 
+"required",
+            "type": 
+"enum",
+            "name": 
+"Role"
+          }
+        },
+        "createdAt": {
+          "type": 
+"field",
+          "dbName": 
+"createdAt",
+          
+"fieldType": {
+            "arity": 
+"required",
+            "type": 
+"datetime"
+          }
+        },
+        "updatedAt": {
+          "type": 
+"field",
+          "dbName": 
+"updatedAt",
+          
+"fieldType": {
+            "arity": 
+"required",
+            "type": 
+"datetime"
+          }
+        }
+      },
+      "skipNulls": 
+false
+    },
+    "enums": {
+      "Role": {
+        "ADMIN": 
+"ADMIN",
+        "FARMER": 
+"FARMER",
+        "WORKER": 
+"WORKER"
+      }
+    }
+  }
+} +107ms
+prisma:driver-adapter:
+pg [js::query_raw] 
+'{\n' +
+  '  "sql": "SELECT \\
+"public\\".\\"User\\".
+\\"id\\", \\"public\\"
+.\\"User\\".\\"email\\
+", \\"public\\".\\"Use
+r\\".\\"name\\", \\"pu
+blic\\".\\"User\\".\\"
+password\\", \\"public
+\\".\\"User\\".\\"role
+\\"::text, \\"public\\
+".\\"User\\".\\"create
+dAt\\", \\"public\\".\
+\"User\\".\\"updatedAt
+\\" FROM \\"public\\".
+\\"User\\" WHERE 1=1 
+OFFSET $1",\n' +
+  '  "args": [\n' +
+  '    "0"\n' +
+  '  ],\n' +
+  '  "argTypes": [\n' 
++
+  '    {\n' +
+  '      "arity": 
+"scalar",\n' +
+  '      
+"scalarType": 
+"bigint",\n' +
+  '      "dbType": 
+null\n' +
+  '    }\n' +
+  '  ]\n' +
+  '}' +911ms
+(node:7228) Warning: 
+SECURITY WARNING: The 
+SSL modes 'prefer', 
+'require', and 
+'verify-ca' are 
+treated as aliases 
+for 'verify-full'.
+In the next major 
+version 
+(pg-connection-string 
+v3.0.0 and pg 
+v9.0.0), these modes 
+will adopt standard 
+libpq semantics, 
+which have weaker 
+security guarantees.
+
+To prepare for this 
+change:
+- If you want the 
+current behavior, 
+explicitly use 
+'sslmode=verify-full'
+- If you want libpq 
+compatibility now, 
+use 'uselibpqcompat=tr
+ue&sslmode=require'
+
+See https://www.postgr
+esql.org/docs/current/
+libpq-ssl.html for 
+libpq SSL mode 
+definitions.
+(Use `node 
+--trace-warnings ...` 
+to show where the 
+warning was created)
+prisma:driver-adapter:
+pg Error in 
+performIO: '{\n  
+"code": "SELF_SIGNED_C
+ERT_IN_CHAIN"\n}' 
++872ms
+prisma:client:request_
+handler {
+  "code": "P1011",
+  "meta": {
+    
+"driverAdapterError": 
+{
+      "name": 
+"DriverAdapterError",
+      "cause": {
+        "kind": 
+"TlsConnectionError",
+        "reason": 
+"self-signed 
+certificate in 
+certificate chain"
+      }
+    }
+  },
+  "clientVersion": 
+"7.8.0",
+  "name": "PrismaClien
+tKnownRequestError"
+} +893ms
+Connection failed: Pri
+smaClientKnownRequestE
+rror: 
+Invalid `prisma.user.f
+indMany()` invocation 
+in
+C:\Users\User\Desktop\
+smartCrop\backend\test
+-conn-js.js:26:41
+
+  23 await 
+prisma.$connect();
+  24 
+console.log("$connect 
+succeeded!");
+  25 
+console.log("Trying 
+to query User 
+table...");
+ΓåÆ 26 const users = 
+await 
+prisma.user.findMany(
+Error opening a TLS 
+connection: 
+self-signed 
+certificate in 
+certificate chain
+    at 
+zr.handleRequestError 
+(C:\Users\User\Desktop
+\smartCrop\backend\nod
+e_modules\@prisma\clie
+nt\runtime\client.js:6
+5:8286)
+    at zr.handleAndLog
+RequestError (C:\Users
+\User\Desktop\smartCro
+p\backend\node_modules
+\@prisma\client\runtim
+e\client.js:65:7581)
+    at zr.request (C:\
+Users\User\Desktop\sma
+rtCrop\backend\node_mo
+dules\@prisma\client\r
+untime\client.js:65:72
+88)
+    at process.process
+TicksAndRejections (no
+de:internal/process/ta
+sk_queues:104:5)
+    at async a (C:\Use
+rs\User\Desktop\smartC
+rop\backend\node_modul
+es\@prisma\client\runt
+ime\client.js:75:6862)
+    at async main (C:\
+Users\User\Desktop\sma
+rtCrop\backend\test-co
+nn-js.js:26:23) {
+  code: 'P1011',
+  meta: {
+    modelName: 'User',
+    
+driverAdapterError: 
+DriverAdapterError: 
+TlsConnectionError
+        at PrismaPgAda
+pter.onError (C:\Users
+\User\Desktop\smartCro
+p\backend\node_modules
+\@prisma\adapter-pg\di
+st\index.js:678:11)
+        at PrismaPgAda
+pter.performIO (C:\Use
+rs\User\Desktop\smartC
+rop\backend\node_modul
+es\@prisma\adapter-pg\
+dist\index.js:673:12)
+        at process.pro
+cessTicksAndRejections
+ (node:internal/proces
+s/task_queues:104:5)
+        at async Prism
+aPgAdapter.queryRaw (C
+:\Users\User\Desktop\s
+martCrop\backend\node_
+modules\@prisma\adapte
+r-pg\dist\index.js:604
+:30)
+        at async 
+e.interpretNode (C:\Us
+ers\User\Desktop\smart
+Crop\backend\node_modu
+les\@prisma\client\run
+time\client.js:11:4462
+1)
+        at async 
+e.interpretNode (C:\Us
+ers\User\Desktop\smart
+Crop\backend\node_modu
+les\@prisma\client\run
+time\client.js:11:4628
+5)
+        at async 
+e.run (C:\Users\User\D
+esktop\smartCrop\backe
+nd\node_modules\@prism
+a\client\runtime\clien
+t.js:11:43335)
+        at async 
+e.execute (C:\Users\Us
+er\Desktop\smartCrop\b
+ackend\node_modules\@p
+risma\client\runtime\c
+lient.js:57:815)
+        at async 
+jt.request (C:\Users\U
+ser\Desktop\smartCrop\
+backend\node_modules\@
+prisma\client\runtime\
+client.js:58:2401)
+        at async 
+Object.singleLoader (C
+:\Users\User\Desktop\s
+martCrop\backend\node_
+modules\@prisma\client
+\runtime\client.js:65:
+6569) {
+      cause: [Object]
+    }
+  },
+  clientVersion: 
+'7.8.0'
+}
+Calling disconnect...
+disconnect succeeded!
+Pool ended!

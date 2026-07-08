@@ -1,0 +1,96 @@
+﻿Γùç injected env (4) from .env // tip: Γîü auth for agents [www.vestauth.com]
+node.exe : C:\Users\Us
+er\Desktop\smartCrop\b
+ackend\node_modules\@p
+risma\client\src\runti
+me\utils\validatePrism
+aClientOptions.ts:250
+At line:1 char:1
++ & "C:\Program Files\
+nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (C:\Users\U   
+ ser\D...tOptions.    
+ts:250:String) []    
+, RemoteException
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+    throw new PrismaCl
+ientConstructorValidat
+ionError(
+          ^
+PrismaClientConstructo
+rValidationError: 
+Using engine type 
+"client" requires 
+either "adapter" or 
+"accelerateUrl" to be 
+provided to 
+PrismaClient 
+constructor.
+Read more at https://p
+ris.ly/d/client-constr
+uctor
+    at validateDepende
+ntOptions (C:\Users\Us
+er\Desktop\smartCrop\b
+ackend\node_modules\@p
+risma\client\src\runti
+me\utils\validatePrism
+aClientOptions.ts:250:
+11)
+    at validatePrismaC
+lientOptions (C:\Users
+\User\Desktop\smartCro
+p\backend\node_modules
+\@prisma\client\src\ru
+ntime\utils\validatePr
+ismaClientOptions.ts:2
+67:3)
+    at new t (C:\Users
+\User\Desktop\smartCro
+p\backend\node_modules
+\@prisma\client\src\ru
+ntime\getPrismaClient.
+ts:358:7)
+    at 
+Object.<anonymous> (C:
+\Users\User\Desktop\sm
+artCrop\backend\src\te
+st-conn.ts:8:16)
+    at 
+Module._compile (node:
+internal/modules/cjs/l
+oader:1871:14)
+    at 
+Module.m._compile (C:\
+Users\User\Desktop\sma
+rtCrop\backend\node_mo
+dules\ts-node\src\inde
+x.ts:1618:23)
+    at node:internal/m
+odules/cjs/loader:2002
+:10
+    at Object.require.
+extensions.<computed> 
+[as .ts] (C:\Users\Use
+r\Desktop\smartCrop\ba
+ckend\node_modules\ts-
+node\src\index.ts:1621
+:12)
+    at Module.load (no
+de:internal/modules/cj
+s/loader:1594:32)
+    at Module._load (n
+ode:internal/modules/c
+js/loader:1396:12)

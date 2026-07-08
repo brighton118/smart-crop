@@ -10,6 +10,5 @@ export default defineConfig({
   datasource: {
     // Supabase PostgreSQL — direct connection for Prisma CLI operations
     url: env("DATABASE_URL"),
-    directUrl: env("DIRECT_URL"),
   },
 });

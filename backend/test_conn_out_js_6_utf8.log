@@ -1,0 +1,317 @@
+﻿Γùç injected env (4) from .env // tip: Γîÿ multiple files { path: ['.env.local', '.env'] }
+node : prisma:client 
+clientVersion 7.8.0 
++218ms
+At line:1 char:1
++ node 
+test-conn-js.js > test
+_conn_out_js_6.log 
+2>&1; Get-Content 
+test_ ...
++ ~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~
+    + CategoryInfo    
+          : NotSpeci  
+  fied: (prisma:cli   
+ ent clientVersion    
+ 7.8.0 +218ms:Str    
+ing) [], RemoteEx    
+ception
+    + FullyQualifiedE 
+   rrorId : NativeCo  
+  mmandError
+ 
+prisma:client:clientEn
+gine Using driver 
+adapter: '{\n' +
+  '  "provider": 
+"postgres",\n' +
+  '  "adapterName": "@
+prisma/adapter-pg",\n'
+ +
+  '  "config": {\n' +
+  '    
+"connectionString": "p
+ostgresql://postgres.i
+yddixaifxxmkeourdve:Ka
+to0788945330@aws-0-eu-
+west-1.pooler.supabase
+.com:5432/postgres",\n
+' +
+  '    "ssl": {\n' +
+  '      
+"rejectUnauthorized": 
+false\n' +
+  '    },\n' +
+  '    "max": 10,\n' +
+  '    "min": 0,\n' +
+  '    "maxUses": 
+null,\n' +
+  '    
+"allowExitOnIdle": 
+false,\n' +
+  '    
+"maxLifetimeSeconds": 
+0,\n' +
+  '    
+"idleTimeoutMillis": 
+10000\n' +
+  '  },\n' +
+  '  "externalPool": 
+{\n' +
+  '    "_events": 
+{},\n' +
+  '    
+"_eventsCount": 0,\n' 
++
+  '    "options": 
+"[Circular *]",\n' +
+  '    "_clients": 
+[],\n' +
+  '    "_idle": 
+[],\n' +
+  '    "_expired": 
+{},\n' +
+  '    
+"_pendingQueue": 
+[],\n' +
+  '    "ending": 
+false,\n' +
+  '    "ended": 
+false\n' +
+  '  }\n' +
+  '}' +4ms
+DATABASE_URL: postgresql://postgres.iyddixaifxxmkeourdve:Kato0788945330@aws-0-eu-west-1.pooler.supabase.com:5432/postgres?sslmode=require
+Calling $connect...
+$connect succeeded!
+Checking orphaned farms...
+prisma:client prisma.$
+queryRawUnsafe(SELECT 
+f.id, f."userId" FROM 
+"Farm" f LEFT JOIN 
+"User" u ON 
+f."userId" = u.id 
+WHERE u.id IS NULL, 
+[]) +193ms
+prisma:client Prisma 
+Client call: +4ms
+prisma:client prisma.$
+queryRawUnsafe({
+  query: "SELECT 
+f.id, f.\"userId\" 
+FROM \"Farm\" f LEFT 
+JOIN \"User\" u ON 
+f.\"userId\" = u.id 
+WHERE u.id IS NULL",
+  parameters: {
+    values: "[]",
+    __prismaRawParamet
+ers__: true
+  }
+}) +2ms
+prisma:client 
+Generated request: 
++0ms
+prisma:client {
+  "action": 
+"queryRaw",
+  "query": {
+    "arguments": {
+      "query": 
+"SELECT f.id, 
+f.\"userId\" FROM 
+\"Farm\" f LEFT JOIN 
+\"User\" u ON 
+f.\"userId\" = u.id 
+WHERE u.id IS NULL",
+      "parameters": 
+"[]"
+    },
+    "selection": {}
+  }
+}
+ +1ms
+prisma:client:clientEn
+gine sending request 
++2ms
+prisma:client:clientEn
+gine query plan 
+created {
+  "type": "query",
+  "args": {
+    "type": "rawSql",
+    "sql": "SELECT 
+f.id, f.\"userId\" 
+FROM \"Farm\" f LEFT 
+JOIN \"User\" u ON 
+f.\"userId\" = u.id 
+WHERE u.id IS NULL",
+    "args": [],
+    "argTypes": []
+  }
+} +1ms
+prisma:driver-adapter:
+pg [js::query_raw] 
+'{\n' +
+  '  "sql": "SELECT 
+f.id, f.\\"userId\\" 
+FROM \\"Farm\\" f 
+LEFT JOIN \\"User\\" 
+u ON f.\\"userId\\" = 
+u.id WHERE u.id IS 
+NULL",\n' +
+  '  "args": [],\n' +
+  '  "argTypes": 
+[]\n' +
+  '}' +352ms
+prisma:client:clientEn
+gine query plan 
+executed +7654ms
+Orphaned farms: [
+  {
+    id: '84078046-6e1f-4483-bb17-b644d3d7a37e',
+    userId: '29bb318e-f656-40d0-91d5-58fea445450c'
+  },
+  {
+    id: '8db1dc48-df10-4d37-82dc-2af7cfe9d1e7',
+    userId: 'c5fe0e97-2e48-4579-a4d6-2606a5f55955'
+  },
+  {
+    id: '98d21c97-c40a-4f73-84b0-32aceaf767f6',
+    userId: '0e18af9e-967b-4678-a7f5-f3965c953c66'
+  },
+  {
+    id: '0296168b-0b00-442d-90db-8229ed40f953',
+    userId: 'b70e1353-bb88-42ae-a41d-e1002ac54cce'
+  }
+]
+Checking if any Zones reference these orphaned farm IDs: '84078046-6e1f-4483-bb17-b644d3d7a37e','8db1dc48-df10-4d37-82dc-2af7cfe9d1e7','98d21c97-c40a-4f73-84b0-32aceaf767f6','0296168b-0b00-442d-90db-8229ed40f953'
+prisma:client prisma.$
+queryRawUnsafe(SELECT 
+id, "farmId" FROM 
+"Zone" WHERE "farmId" 
+IN ('84078046-6e1f-448
+3-bb17-b644d3d7a37e','
+8db1dc48-df10-4d37-82d
+c-2af7cfe9d1e7','98d21
+c97-c40a-4f73-84b0-32a
+ceaf767f6','0296168b-0
+b00-442d-90db-8229ed40
+f953'), []) +6ms
+prisma:client Prisma 
+Client call: +0ms
+prisma:client prisma.$
+queryRawUnsafe({
+  query: "SELECT id, 
+\"farmId\" FROM 
+\"Zone\" WHERE 
+\"farmId\" IN ('840780
+46-6e1f-4483-bb17-b644
+d3d7a37e','8db1dc48-df
+10-4d37-82dc-2af7cfe9d
+1e7','98d21c97-c40a-4f
+73-84b0-32aceaf767f6',
+'0296168b-0b00-442d-90
+db-8229ed40f953')",
+  parameters: {
+    values: "[]",
+    __prismaRawParamet
+ers__: true
+  }
+}) +1ms
+prisma:client 
+Generated request: 
++0ms
+prisma:client {
+  "action": 
+"queryRaw",
+  "query": {
+    "arguments": {
+      "query": 
+"SELECT id, 
+\"farmId\" FROM 
+\"Zone\" WHERE 
+\"farmId\" IN ('840780
+46-6e1f-4483-bb17-b644
+d3d7a37e','8db1dc48-df
+10-4d37-82dc-2af7cfe9d
+1e7','98d21c97-c40a-4f
+73-84b0-32aceaf767f6',
+'0296168b-0b00-442d-90
+db-8229ed40f953')",
+      "parameters": 
+"[]"
+    },
+    "selection": {}
+  }
+}
+ +0ms
+prisma:client:clientEn
+gine sending request 
++0ms
+prisma:client:clientEn
+gine query plan 
+created {
+  "type": "query",
+  "args": {
+    "type": "rawSql",
+    "sql": "SELECT 
+id, \"farmId\" FROM 
+\"Zone\" WHERE 
+\"farmId\" IN ('840780
+46-6e1f-4483-bb17-b644
+d3d7a37e','8db1dc48-df
+10-4d37-82dc-2af7cfe9d
+1e7','98d21c97-c40a-4f
+73-84b0-32aceaf767f6',
+'0296168b-0b00-442d-90
+db-8229ed40f953')",
+    "args": [],
+    "argTypes": []
+  }
+} +0ms
+prisma:driver-adapter:
+pg [js::query_raw] 
+'{\n' +
+  `  "sql": "SELECT 
+id, \\"farmId\\" FROM 
+\\"Zone\\" WHERE 
+\\"farmId\\" IN ('8407
+8046-6e1f-4483-bb17-b6
+44d3d7a37e','8db1dc48-
+df10-4d37-82dc-2af7cfe
+9d1e7','98d21c97-c40a-
+4f73-84b0-32aceaf767f6
+','0296168b-0b00-442d-
+90db-8229ed40f953')",\
+n` +
+  '  "args": [],\n' +
+  '  "argTypes": 
+[]\n' +
+  '}' +7658ms
+prisma:client:clientEn
+gine query plan 
+executed +307ms
+Referenced zones: [
+  {
+    id: '2ad67fe3-e059-4198-8348-bcf6bff22572',
+    farmId: '84078046-6e1f-4483-bb17-b644d3d7a37e'
+  },
+  {
+    id: '409dc6b9-9933-4bda-ac52-32db28efa45c',
+    farmId: '8db1dc48-df10-4d37-82dc-2af7cfe9d1e7'
+  },
+  {
+    id: '8cfeb8e6-e319-4bfb-91b8-c799cade8b59',
+    farmId: '98d21c97-c40a-4f73-84b0-32aceaf767f6'
+  },
+  {
+    id: '1c3d6dca-c236-4be3-ba95-3cf320e763b1',
+    farmId: '0296168b-0b00-442d-90db-8229ed40f953'
+  }
+]
+Cannot delete orphaned farms because they have referencing zones.
+Calling disconnect...
+disconnect succeeded!
+Pool ended!
