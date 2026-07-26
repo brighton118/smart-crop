@@ -40,10 +40,18 @@ model Farm {
 model Zone {
   id          String       @id @default(uuid())
   name        String
+  location    String?
+  chamber     String?
   farmId      String
   farm        Farm         @relation(fields: [farmId], references: [id])
   sensors     Sensor[]
-  cropRecords CropRecord[]
+  cropBatches CropBatch[]
+  
+  fans        Fan[]
+  coolers     Cooler[]
+  devices     Device[]
+  envThreshold EnvironmentalThreshold?
+
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
@@ -55,6 +63,9 @@ model Sensor {
   zoneId       String
   zone         Zone            @relation(fields: [zoneId], references: [id])
   deviceId     String          @unique
+  esp32Id      String?
+  device       Device?         @relation(fields: [esp32Id], references: [id], onDelete: SetNull)
+  gpioPin      String?
   samplingRate Int             @default(10) // in seconds
   minThreshold Float
   maxThreshold Float
@@ -83,11 +94,40 @@ enum SensorStatus {
   WARNING
 }
 
+enum DeviceStatus {
+  ONLINE
+  OFFLINE
+  WARNING
+}
+
+model Device {
+  id           String       @id @default(uuid())
+  name         String
+  deviceId     String       @unique
+  macAddress   String?
+  zoneId       String
+  zone         Zone         @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  firmware     String?
+  ipAddress    String?
+  status       DeviceStatus @default(ONLINE)
+  lastSeen     DateTime     @default(now())
+  
+  sensors      Sensor[]
+  fans         Fan[]
+  coolers      Cooler[]
+  
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
 model SensorReading {
   id        String   @id @default(uuid())
   sensorId  String
   sensor    Sensor   @relation(fields: [sensorId], references: [id])
   value     Float
+  temperature Float?
+  humidity    Float?
+  moisture    Float?
   timestamp DateTime @default(now())
 
   @@index([sensorId, timestamp])
@@ -115,29 +155,172 @@ enum AlertStatus {
   RESOLVED
 }
 
-model CropRecord {
-  id            String     @id @default(uuid())
-  batchName     String
-  strain        String
-  plantedDate   DateTime   @default(now())
-  harvestDate   DateTime?
-  status        CropStatus @default(GROWING)
-  yield         Float?     // in grams or kg
-  seedCount     Int?
-  cloneCount    Int?
-  harvestWeight Float?
-  recordType    String     @default("SEED")
-  zoneId        String
-  zone          Zone       @relation(fields: [zoneId], references: [id])
-  notes         String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+enum BatchStatus {
+  PLANNING
+  ACTIVE
+  HARVESTED
+  COMPLETED
+  CANCELLED
 }
 
-enum CropStatus {
-  SEEDLING
-  VEGETATIVE
-  FLOWERING
-  GROWING
-  HARVESTED
+model CropBatch {
+  id              String   @id @default(uuid())
+  batchName       String
+  zoneId          String
+  zone            Zone     @relation(fields: [zoneId], references: [id])
+  status          BatchStatus @default(ACTIVE)
+  
+  plantingRecord  PlantingRecord?
+  cultivationLogs CultivationRecord[]
+  harvests        HarvestRecord[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model PlantingRecord {
+  id                String   @id @default(uuid())
+  batchId           String   @unique
+  batch             CropBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  strain            String
+  plantedDate       DateTime
+  seedCount         Int?
+  cloneCount        Int?
+  plantCount        Int?
+  plantingMethod    String?
+  responsiblePerson String?
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model CultivationRecord {
+  id                String   @id @default(uuid())
+  batchId           String
+  batch             CropBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  recordDate        DateTime @default(now())
+  growthStage       String
+  plantCount        Int?
+  healthStatus      String?
+  irrigationStatus  String?
+  nutrientInfo      String?
+  envConditions     String?
+  notes             String?
+  responsiblePerson String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model HarvestRecord {
+  id                String   @id @default(uuid())
+  batchId           String
+  batch             CropBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  harvestDate       DateTime @default(now())
+  plantsHarvested   Int?
+  freshWeight       Float?
+  dryWeight         Float?
+  qualityGrade      String?
+  notes             String?
+  responsiblePerson String?
+  postHarvests      PostHarvestRecord[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model PostHarvestRecord {
+  id                String   @id @default(uuid())
+  harvestId         String
+  harvest           HarvestRecord @relation(fields: [harvestId], references: [id], onDelete: Cascade)
+  dryingStartDate   DateTime?
+  dryingEndDate     DateTime?
+  curingStartDate   DateTime?
+  curingEndDate     DateTime?
+  finalWeight       Float?
+  storageLocation   String?
+  storageConditions String?
+  productStatus     String?
+  notes             String?
+  responsiblePerson String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+enum EquipmentStatus {
+  ON
+  OFF
+}
+
+enum ControlMode {
+  MANUAL
+  AUTOMATIC
+}
+
+model Fan {
+  id       String          @id @default(uuid())
+  name     String
+  zoneId   String
+  zone     Zone            @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  esp32Id  String?
+  device   Device?         @relation(fields: [esp32Id], references: [id], onDelete: SetNull)
+  relayChannel Int?
+  gpioPin  String?
+  status   EquipmentStatus @default(OFF)
+  mode     ControlMode     @default(MANUAL)
+  speed    String          @default("Low") // "Low", "Medium", "High"
+  events   EquipmentEvent[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model Cooler {
+  id       String          @id @default(uuid())
+  name     String
+  zoneId   String
+  zone     Zone            @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  esp32Id  String?
+  device   Device?         @relation(fields: [esp32Id], references: [id], onDelete: SetNull)
+  relayChannel Int?
+  gpioPin  String?
+  status   EquipmentStatus @default(OFF)
+  mode     ControlMode     @default(MANUAL)
+  events   EquipmentEvent[]
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+model EquipmentEvent {
+  id         String   @id @default(uuid())
+  fanId      String?
+  fan        Fan?     @relation(fields: [fanId], references: [id], onDelete: Cascade)
+  coolerId   String?
+  cooler     Cooler?  @relation(fields: [coolerId], references: [id], onDelete: Cascade)
+  triggerReason String
+  previousState String
+  newState   String
+  timestamp  DateTime @default(now())
+  sensorReadingId String?
+}
+
+model EnvironmentalThreshold {
+  id         String   @id @default(uuid())
+  zoneId     String   @unique
+  zone       Zone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  
+  tempMin    Float    @default(18.0)
+  tempTarget Float    @default(21.0)
+  tempMax    Float    @default(24.0)
+
+  humidityMin    Float @default(50.0)
+  humidityTarget Float @default(55.0)
+  humidityMax    Float @default(65.0)
+
+  moistureMin    Float @default(10.0)
+  moistureTarget Float @default(12.0)
+  moistureMax    Float @default(14.0)
+
+  fanAutoRules    String? 
+  coolerAutoRules String? 
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }

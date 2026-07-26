@@ -40,7 +40,10 @@ export function Dashboard() {
       setLoading(true);
       // 1. Get Farm & Zone
       const data = await getOrCreateDefaultFarm(user!.id);
-      if (!data) return;
+      if (!data) {
+        setLoading(false);
+        return;
+      }
 
       setFarm(data.farm);
 

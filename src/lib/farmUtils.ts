@@ -1,6 +1,6 @@
 import { supabase, DbFarm, DbZone } from "./supabase";
 
-export async function getOrCreateDefaultFarm(userId: string, farmName: string = "KindBuds Facility 1"): Promise<{ farm: DbFarm, zone: DbZone } | null> {
+export async function getOrCreateDefaultFarm(userId: string, farmName: string = "KindBuds Facility 1"): Promise<{ farm: DbFarm, zone: DbZone, zones: DbZone[] } | null> {
   try {
     // 1. Check if user already has a farm
     const { data: existingFarms, error: farmErr } = await supabase
@@ -17,24 +17,25 @@ export async function getOrCreateDefaultFarm(userId: string, farmName: string = 
     if (!farm) {
       // FIX: Ensure the user exists in the public.User table to satisfy the foreign key constraint
       const { data: existingUser } = await supabase.from("User").select("id").eq("id", userId);
-      
+
       if (!existingUser || existingUser.length === 0) {
         // Fetch real user details from Auth
         const { data: authData } = await supabase.auth.getUser();
         const email = authData?.user?.email || `user_${userId}@kindbudsltd.com`;
         const name = authData?.user?.user_metadata?.name || "Farmer";
 
-        await supabase.from("User").insert([{ 
-          id: userId, 
-          email: email, 
-          name: name, 
-          password: "MANAGED_BY_SUPABASE_AUTH" 
+        await supabase.from("User").insert([{
+          id: userId,
+          email: email,
+          name: name,
+          password: "MANAGED_BY_SUPABASE_AUTH",
+          updatedAt: new Date().toISOString()
         }]);
       }
 
       const { data: newFarm, error: createFarmErr } = await supabase
         .from("Farm")
-        .insert([{ name: farmName, userId: userId }])
+        .insert([{ id: crypto.randomUUID(), name: farmName, userId: userId, updatedAt: new Date().toISOString() }])
         .select()
         .single();
 
@@ -42,30 +43,35 @@ export async function getOrCreateDefaultFarm(userId: string, farmName: string = 
       farm = newFarm as DbFarm;
     }
 
-    // 3. Check if this farm has any zones
+    // 3. Ensure required zones exist
     const { data: existingZones, error: zoneErr } = await supabase
       .from("Zone")
       .select("*")
-      .eq("farmId", farm.id)
-      .limit(1);
+      .eq("farmId", farm.id);
 
     if (zoneErr) throw zoneErr;
 
-    let zone = existingZones?.[0] as DbZone;
+    const requiredZoneNames = ["Zone 1", "Zone 2", "Greenhouse"];
+    const existingZoneNames = existingZones?.map(z => z.name) || [];
+    const missingZones = requiredZoneNames.filter(name => !existingZoneNames.includes(name));
 
-    // 4. If no zones exist, create a default "Flowering Room A" zone
-    if (!zone) {
-      const { data: newZone, error: createZoneErr } = await supabase
-        .from("Zone")
-        .insert([{ name: "Flowering Room A", farmId: farm.id }])
-        .select()
-        .single();
+    if (missingZones.length > 0) {
+      const now = new Date().toISOString();
+      const insertData = missingZones.map(name => ({
+        id: crypto.randomUUID(),
+        name: name,
+        farmId: farm.id,
+        updatedAt: now
+      }));
 
-      if (createZoneErr) throw createZoneErr;
-      zone = newZone as DbZone;
+      await supabase.from("Zone").insert(insertData);
     }
 
-    return { farm, zone };
+    // Fetch them all again to return a valid zone for chaining
+    const { data: finalZones } = await supabase.from("Zone").select("*").eq("farmId", farm.id);
+    let zone = finalZones?.[0] as DbZone || (existingZones?.[0] as DbZone);
+
+    return { farm, zone, zones: finalZones as DbZone[] || (existingZones as DbZone[]) };
   } catch (error) {
     console.error("Error setting up default farm/zone:", error);
     return null;

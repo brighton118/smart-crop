@@ -44,6 +44,7 @@ export async function seedDatabaseIfEmpty(zoneId: string) {
         currentValue = Math.min(sensor.maxThreshold + 5, Math.max(sensor.minThreshold - 5, currentValue));
 
         readings.push({
+          id: crypto.randomUUID(),
           sensorId: sensor.id,
           value: parseFloat(currentValue.toFixed(1)),
           timestamp: time.toISOString(),
@@ -75,6 +76,7 @@ export async function seedDatabaseIfEmpty(zoneId: string) {
       else message = `Abnormal reading detected for sensor ${randomSensor.name}.`;
 
       alerts.push({
+        id: crypto.randomUUID(),
         sensorId: randomSensor.id,
         type: type,
         message: message,
@@ -88,34 +90,59 @@ export async function seedDatabaseIfEmpty(zoneId: string) {
       await supabase.from("Alert").insert(alerts);
     }
 
-    // 5. Generate some mock Crop Records
-    const cropRecords = [
+    // 5. Generate some mock Crop Batches and Planting Records
+    const batch1Id = crypto.randomUUID();
+    const batch2Id = crypto.randomUUID();
+
+    const cropBatches = [
       {
+        id: batch1Id,
         batchName: "Batch A1",
-        strain: "OG Kush",
         zoneId: zoneId,
-        plantedDate: new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000).toISOString(),
-        harvestDate: null,
         status: "FLOWERING",
-        yield: null,
-        notes: "Healthy growth, transition to flower successful."
+        updatedAt: new Date().toISOString()
       },
       {
+        id: batch2Id,
         batchName: "Batch B2",
-        strain: "Sour Diesel",
         zoneId: zoneId,
-        plantedDate: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-        harvestDate: null,
         status: "VEGETATIVE",
-        yield: null,
-        notes: "Rapid vegetative growth observed."
+        updatedAt: new Date().toISOString()
+      }
+    ];
+
+    const plantingRecords = [
+      {
+        id: crypto.randomUUID(),
+        batchId: batch1Id,
+        strain: "OG Kush",
+        seedType: "Clone",
+        plantingDate: new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000).toISOString(),
+        plantsCount: 120,
+        expectedHarvestDate: new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000).toISOString(),
+        notes: "Healthy growth, transition to flower successful.",
+        responsiblePerson: "System",
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: crypto.randomUUID(),
+        batchId: batch2Id,
+        strain: "Sour Diesel",
+        seedType: "Seed",
+        plantingDate: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+        plantsCount: 80,
+        expectedHarvestDate: new Date(now.getTime() + 45 * 24 * 60 * 60 * 1000).toISOString(),
+        notes: "Rapid vegetative growth observed.",
+        responsiblePerson: "System",
+        updatedAt: new Date().toISOString()
       }
     ];
 
     try {
-      await supabase.from("CropRecord").insert(cropRecords);
+      await supabase.from("CropBatch").insert(cropBatches);
+      await supabase.from("PlantingRecord").insert(plantingRecords);
     } catch (e) {
-      console.warn("CropRecord table might be missing:", e);
+      console.warn("Could not insert seed batches/planting:", e);
     }
 
     console.log("Database seeded successfully.");

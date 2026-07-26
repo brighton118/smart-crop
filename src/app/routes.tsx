@@ -4,10 +4,11 @@ import { Register } from "./pages/Register";
 import { Landing } from "./pages/Landing";
 import { Dashboard } from "./pages/Dashboard";
 import { Alerts } from "./pages/Alerts";
-import { FarmData } from "./pages/FarmData";
+import { DataAnalytics } from "./pages/DataAnalytics";
 import { Settings } from "./pages/Settings";
-import { SensorConfig } from "./pages/SensorConfig";
 import { Records } from "./pages/Records";
+import { DryersList } from "./pages/dryers/DryersList";
+import { DryerDetails } from "./pages/dryers/DryerDetails";
 import { Layout } from "./components/Layout";
 
 export const router = createBrowserRouter([
@@ -36,12 +37,16 @@ export const router = createBrowserRouter([
         element: <Alerts />,
       },
       {
-        path: "farm-data",
-        element: <FarmData />,
+        path: "data-analytics",
+        element: <DataAnalytics />,
       },
       {
-        path: "sensors",
-        element: <SensorConfig />,
+        path: "dryers",
+        element: <DryersList />,
+      },
+      {
+        path: "dryers/:dryerId",
+        element: <DryerDetails />,
       },
       {
         path: "records",

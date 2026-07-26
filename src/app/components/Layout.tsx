@@ -7,14 +7,14 @@ import {
   Sprout,
   LayoutDashboard,
   Bell,
-  Database,
+  BarChart3,
   Settings,
   Menu,
   X,
   LogOut,
   User,
-  Radio,
   ClipboardList,
+  Wind
 } from "lucide-react";
 
 export function Layout() {
@@ -31,12 +31,12 @@ export function Layout() {
   }, [user, loading, navigate]);
 
   const navItems = [
-    { path: "/app",         icon: LayoutDashboard, label: "Dashboard" },
-    { path: "/app/alerts",  icon: Bell,            label: "Alerts" },
-    { path: "/app/farm-data", icon: Database,       label: "Farm Data" },
-    { path: "/app/sensors", icon: Radio,            label: "Sensors" },
-    { path: "/app/records", icon: ClipboardList,    label: "Records" },
-    { path: "/app/settings", icon: Settings,        label: "Settings" },
+    { path: "/app", icon: LayoutDashboard, label: "Dashboard" },
+    { path: "/app/dryers", icon: Wind, label: "Dryers" },
+    { path: "/app/records", icon: ClipboardList, label: "Farm Data" },
+    { path: "/app/data-analytics", icon: BarChart3, label: "Data & Analytics" },
+    { path: "/app/alerts", icon: Bell, label: "Alerts" },
+    { path: "/app/settings", icon: Settings, label: "Settings" },
   ];
 
   const isActive = (path: string) => {
@@ -101,11 +101,10 @@ export function Layout() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                    active
-                      ? "bg-primary text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${active
+                    ? "bg-primary text-white"
+                    : "text-gray-700 hover:bg-gray-100"
+                    }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.label}</span>
@@ -153,9 +152,8 @@ export function Layout() {
 
       {/* Mobile Sidebar */}
       <aside
-        className={`lg:hidden fixed left-0 top-0 bottom-0 w-64 bg-white z-50 transform transition-transform ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`lg:hidden fixed left-0 top-0 bottom-0 w-64 bg-white z-50 transform transition-transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
@@ -181,11 +179,10 @@ export function Layout() {
                   key={item.path}
                   to={item.path}
                   onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
-                    active
-                      ? "bg-primary text-white"
-                      : "text-gray-700 hover:bg-gray-100"
-                  }`}
+                  className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${active
+                    ? "bg-primary text-white"
+                    : "text-gray-700 hover:bg-gray-100"
+                    }`}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.label}</span>
