@@ -16,7 +16,8 @@ import {
   ChevronDown,
   ChevronUp,
   Loader2,
-  Bell
+  Bell,
+  Sparkles
 } from "lucide-react";
 
 // Section icon images
@@ -154,6 +155,21 @@ function AlertCard({ alert, onDismiss }: { alert: LocalAlert; onDismiss: (id: st
             </div>
           </div>
           <div className="flex gap-2 flex-shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-xs h-8 text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+              onClick={() => {
+                const event = new CustomEvent('openAiChatContext', {
+                  detail: { prompt: `Can you explain why I received this alert and what I should do? Alert: [${alert.title}] ${alert.message}` }
+                });
+                window.dispatchEvent(event);
+              }}
+              title="Ask AI to analyze this alert"
+            >
+              <Sparkles className="w-3 h-3 mr-1" />
+              Ask AI
+            </Button>
             <Button variant="outline" size="sm" className="text-xs h-8" onClick={() => setShowDetails((v) => !v)}>
               {showDetails ? "Hide" : "Details"}
             </Button>
@@ -218,7 +234,7 @@ function AlertSectionGroup({
               <span
                 key={a.id}
                 className={`w-2 h-2 rounded-full ${a.status === "critical" ? "bg-red-500" :
-                    a.status === "warning" ? "bg-yellow-400" : "bg-green-500"
+                  a.status === "warning" ? "bg-yellow-400" : "bg-green-500"
                   }`}
               />
             ))}

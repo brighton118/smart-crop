@@ -34,39 +34,45 @@ async function main() {
     const zoneId = zones[0].id;
     console.log(`Found zone ID: ${zoneId}. Checking CropRecord count...`);
 
-    const cropRecordCount = await prisma.cropRecord.count();
-    if (cropRecordCount > 0) {
-        console.log(`Database already has ${cropRecordCount} crop records. Skipping seed.`);
+    const cropBatchCount = await prisma.cropBatch.count();
+    if (cropBatchCount > 0) {
+        console.log(`Database already has ${cropBatchCount} crop batches. Skipping seed.`);
         return;
     }
 
     console.log("Inserting seed crop records...");
     const now = new Date();
-    await prisma.cropRecord.createMany({
-        data: [
-            {
-                batchName: "Batch A1",
-                strain: "OG Kush",
-                zoneId: zoneId,
-                plantedDate: new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000),
-                harvestDate: null,
-                status: "FLOWERING",
-                yield: null,
-                notes: "Healthy growth, transition to flower successful.",
-                recordType: "SEED"
-            },
-            {
-                batchName: "Batch B2",
-                strain: "Sour Diesel",
-                zoneId: zoneId,
-                plantedDate: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000),
-                harvestDate: null,
-                status: "VEGETATIVE",
-                yield: null,
-                notes: "Rapid vegetative growth observed.",
-                recordType: "SEED"
-            }
-        ]
+
+    const batchA1 = await prisma.cropBatch.create({
+        data: {
+            batchName: "Batch A1",
+            zoneId: zoneId,
+            status: "ACTIVE",
+        }
+    });
+    await prisma.plantingRecord.create({
+        data: {
+            batchId: batchA1.id,
+            strain: "OG Kush",
+            plantedDate: new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000),
+            notes: "Healthy growth, transition to flower successful."
+        }
+    });
+
+    const batchB2 = await prisma.cropBatch.create({
+        data: {
+            batchName: "Batch B2",
+            zoneId: zoneId,
+            status: "ACTIVE",
+        }
+    });
+    await prisma.plantingRecord.create({
+        data: {
+            batchId: batchB2.id,
+            strain: "Sour Diesel",
+            plantedDate: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000),
+            notes: "Rapid vegetative growth observed."
+        }
     });
     console.log("Crop records seeded successfully!");
 }

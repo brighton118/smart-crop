@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import { Activity, Plus, Trash2, Settings2 } from "lucide-react";
+import { Activity, Trash2, Settings2 } from "lucide-react";
+import { AddSensorModal } from "./AddSensorModal";
 
 export function SensorsTab({ dryer }: { dryer: any }) {
     const sensors = dryer.sensors || [];
@@ -13,7 +14,7 @@ export function SensorsTab({ dryer }: { dryer: any }) {
                     <h3 className="font-medium text-gray-900">Registered Sensors</h3>
                     <p className="text-sm text-gray-500">Manage environmental sensors mapped to this drying zone.</p>
                 </div>
-                <Button className="gap-2"><Plus className="w-4 h-4" /> Add Sensor</Button>
+                <AddSensorModal zoneId={dryer.id} onAdd={() => window.location.reload()} />
             </div>
 
             {sensors.length === 0 ? (

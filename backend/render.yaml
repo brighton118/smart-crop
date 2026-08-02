@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: smartcrop-ai-backend
+    env: node
+    buildCommand: npm install && npm install typescript -g && tsc
+    startCommand: node dist/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: FRONTEND_URL
+        value: https://kindbbuds-ltd.web.app
+      - key: FIREBASE_PROJECT_ID
+        value: kindbbuds-ltd
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false

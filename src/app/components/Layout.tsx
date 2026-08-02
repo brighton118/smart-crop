@@ -16,6 +16,7 @@ import {
   ClipboardList,
   Wind
 } from "lucide-react";
+import { AiFloatingButton } from "./AiFloatingButton";
 
 export function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -52,7 +53,7 @@ export function Layout() {
   };
 
   if (loading) {
-    return <div className="min-h-screen bg-gray-50 flex items-center justify-center">{t("Loading...")}</div>;
+    return <div className="min-h-screen bg-transparent flex items-center justify-center">{t("Loading...")}</div>;
   }
 
   if (!user) {
@@ -60,9 +61,11 @@ export function Layout() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-transparent">
+      <AiFloatingButton />
+
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b z-50">
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-card/80 backdrop-blur-md border-b z-50 text-card-foreground">
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center space-x-2">
             <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-lg">
@@ -77,7 +80,7 @@ export function Layout() {
       </div>
 
       {/* Sidebar - Desktop */}
-      <aside className="hidden lg:block fixed left-0 top-0 bottom-0 w-64 bg-white border-r z-40">
+      <aside className="hidden lg:block fixed left-0 top-0 bottom-0 w-64 bg-card/80 backdrop-blur-md border-r z-40 text-card-foreground">
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b">
@@ -152,7 +155,7 @@ export function Layout() {
 
       {/* Mobile Sidebar */}
       <aside
-        className={`lg:hidden fixed left-0 top-0 bottom-0 w-64 bg-white z-50 transform transition-transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        className={`lg:hidden fixed left-0 top-0 bottom-0 w-64 bg-card/90 backdrop-blur-md text-card-foreground z-50 transform transition-transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
       >
         <div className="flex flex-col h-full">

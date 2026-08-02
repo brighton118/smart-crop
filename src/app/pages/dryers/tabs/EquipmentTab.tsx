@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { Button } from "../../../components/ui/button";
-import { Wind, Power, Plus, Settings2, ShieldAlert } from "lucide-react";
+import { Wind, Power, Settings2, ShieldAlert } from "lucide-react";
+import { AddEquipmentModal } from "./AddEquipmentModal";
 
 export function EquipmentTab({ dryer }: { dryer: any }) {
     const fans = dryer.fans || [];
@@ -15,7 +16,7 @@ export function EquipmentTab({ dryer }: { dryer: any }) {
                     <h3 className="font-medium text-gray-900">Control Equipment</h3>
                     <p className="text-sm text-gray-500">Manage fans and coolers bound to this drying zone.</p>
                 </div>
-                <Button className="gap-2"><Plus className="w-4 h-4" /> Add Equipment</Button>
+                <AddEquipmentModal zoneId={dryer.id} onAdd={() => window.location.reload()} />
             </div>
 
             {allEquipment.length === 0 ? (

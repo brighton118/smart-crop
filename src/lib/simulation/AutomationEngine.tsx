@@ -32,6 +32,8 @@ export function AutomationProvider({ children }: { children: React.ReactNode }) 
     const [fans, setFans] = useState<DbFan[]>([]);
     const [coolers, setCoolers] = useState<DbCooler[]>([]);
     const [thresholds, setThresholds] = useState<DbEnvironmentalThreshold[]>([]);
+    const [connections, setConnections] = useState<any[]>([]);
+    const [relayModules, setRelayModules] = useState<any[]>([]);
 
     const [nodes, setNodes] = useState<SimulationSensor[]>([]);
     const [chartData, setChartData] = useState<{ time: string; temp: number; humidity: number; moisture: number }[]>([]);
@@ -45,18 +47,22 @@ export function AutomationProvider({ children }: { children: React.ReactNode }) 
     }, []);
 
     async function loadBaseData() {
-        const [z, f, c, s, t] = await Promise.all([
+        const [z, f, c, s, t, hc, rm] = await Promise.all([
             supabase.from('Zone').select('*'),
             supabase.from('Fan').select('*'),
             supabase.from('Cooler').select('*'),
             supabase.from('Sensor').select('*'),
-            supabase.from('EnvironmentalThreshold').select('*')
+            supabase.from('EnvironmentalThreshold').select('*'),
+            supabase.from('HardwareConnection').select('*'),
+            supabase.from('RelayModule').select('*')
         ]);
 
         if (z.data) setZones(z.data);
         if (f.data) setFans(f.data);
         if (c.data) setCoolers(c.data);
         if (t.data) setThresholds(t.data);
+        if (hc.data) setConnections(hc.data);
+        if (rm.data) setRelayModules(rm.data);
         if (s.data) {
             setNodes(s.data.map(snsr => ({
                 ...snsr,
@@ -180,25 +186,37 @@ export function AutomationProvider({ children }: { children: React.ReactNode }) 
     }, [isStreaming, zones, thresholds, fans, coolers]);
 
     const processCommand = async (equipment: any, type: 'Fan' | 'Cooler', commandState: 'ON' | 'OFF', reason: string) => {
-        // Step 1: Simulate Command Send to ESP32 Mapping (Wait Random MS)
-        // Log "Sending command to ESP32: equipment.esp32Id on Channel: equipment.relayChannel" internally.
+        // Step 1: Resolve the Real Hardware Topology path (Command Validation)
+        const eqKey = type === 'Fan' ? 'fanId' : 'coolerId';
+        const connection = connections.find(c => c[eqKey] === equipment.id);
 
+        if (!connection) {
+            console.error(`[TOPOLOGY REJECTED] Cannot execute command: No Physical HardwareConnection mapping found for ${type} ${equipment.name}. Attach it via Hardware Map first.`);
+            return;
+        }
+
+        const resolvedESP32 = connection.deviceId;
+        const resolvedRelay = connection.relayModuleId;
+        const resolvedRelayName = resolvedRelay ? relayModules.find(r => r.id === resolvedRelay)?.name : 'Onboard Relay';
+
+        console.log(`[TOPOLOGY TRACE SUCCESS] Validated command path: DRYER (${equipment.zoneId}) -> ESP32 (${resolvedESP32}) -> RELAY (${resolvedRelayName} CH ${connection.relayChannel}) -> ${type.toUpperCase()} (${equipment.name})`);
+
+        // Step 2: Simulate Command Send to ESP32 Mapping (Wait Random MS)
         setTimeout(async () => {
-            // Step 2: Command Acknowledged, update DB
+            // Step 3: Command Acknowledged, update DB
             if (type === 'Fan') {
                 await supabase.from('Fan').update({ status: commandState }).eq('id', equipment.id);
             } else {
                 await supabase.from('Cooler').update({ status: commandState }).eq('id', equipment.id);
             }
 
-            // Step 3: Create Log Event
+            // Step 4: Create Log Event
             await supabase.from('EquipmentEvent').insert({
                 fanId: type === 'Fan' ? equipment.id : null,
                 coolerId: type === 'Cooler' ? equipment.id : null,
                 previousState: commandState === 'ON' ? 'OFF' : 'ON',
                 newState: commandState,
-                triggerReason: reason,
-                controlMode: 'AUTO'
+                triggerReason: reason
             });
 
         }, 500); // 500ms network round-trip simulation

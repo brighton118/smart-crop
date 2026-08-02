@@ -5,7 +5,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../components/ui/card";
 import { Sprout, Mail, Lock, AlertCircle, Loader2 } from "lucide-react";
-import { supabase } from "../../lib/supabase";
+
 
 export function Login() {
   const navigate = useNavigate();
@@ -19,14 +19,11 @@ export function Login() {
     setError(null);
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
+    // --- DEV OVERRIDE ---
+    // Bypass actual supabase call entirely and navigate instantly
+    setTimeout(() => {
       navigate("/app");
-    }
+    }, 500);
   };
 
   return (

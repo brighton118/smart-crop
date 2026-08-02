@@ -1,0 +1,62 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Base helper to check if a user is securely logged into Firebase Auth
+    function isAuthenticated() {
+      // In a production scenario, we'd also verify email verification or custom claims (RBAC)
+      return request.auth != null;
+    }
+
+    // 1. User Profiles: strict isolation, can only read/edit their own profile document
+    match /User/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // 2. Core Entities: authenticated users have access to Farm structures.
+    // Future iteration: implement Role-Based Access Control via `request.auth.token.role == "ADMIN"` 
+    match /Farm/{farmId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /Zone/{zoneId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // 3. Telemetry and Equipment: Devices push via IoT Admin SDKs, so clients only need standard auth reads/writes.
+    match /Sensor/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    match /SensorReading/{document=**} {
+      allow read, write: if isAuthenticated(); // Frontend plots graphs
+    }
+
+    match /Device/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // 4. Actuators, Alerts, and Crops
+    match /Fan/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    match /Cooler/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    match /Alert/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /CropBatch/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // 5. Catch-all fallback blocking unauthorized deep nested queries
+    match /{document=**} {
+      allow read: if isAuthenticated();    // Read-only default for misc items
+      allow write: if false;               // Explicitly block unknown writes
+    }
+  }
+}

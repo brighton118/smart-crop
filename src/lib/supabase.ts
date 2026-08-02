@@ -1,23 +1,176 @@
-import { createClient } from '@supabase/supabase-js';
+// ─── Shared Database TypeScript Interfaces ─────────────────────────────────────
+// Migrated from Supabase models. Reused for Firebase Firestore schema typings.
 
-declare global {
-  interface ImportMetaEnv {
-    VITE_SUPABASE_URL: string;
-    VITE_SUPABASE_ANON_KEY: string;
+import { collection, getDocs, doc, setDoc, query, where, orderBy, limit as limitConstraint, deleteDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase/config';
+import { auth } from '../firebase/auth';
+
+class FirestoreQueryAdapter {
+  constructor(public tableName: string) { }
+
+  select(fields: string = '*') {
+    let constraints: any[] = [];
+    let _orderArg: any = null;
+    let _selectSubtables: boolean = false;
+
+    // Some complex joins like `*, Fan(...)` we just ignore in simple NoSQL
+    if (fields && fields.includes('(')) _selectSubtables = true;
+
+    const executor = async () => {
+      try {
+        const colRef = collection(db, this.tableName);
+        const q = constraints.length > 0 ? query(colRef, ...constraints) : colRef;
+        const snaps = await getDocs(q);
+
+        let data = snaps.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // Handle client side 'exact' counting if head is true (used by seedData)
+        if (fields === 'count' || fields.includes('count')) {
+          return { data: null, count: data.length, error: null };
+        }
+
+        return { data, error: null };
+      } catch (err: any) {
+        console.error("Firestore Select Error:", err);
+        return { data: null, error: err };
+      }
+    };
+
+    const builder = {
+      eq: (field: string, val: any) => {
+        constraints.push(where(field, '==', val));
+        return builder;
+      },
+      in: (field: string, vals: any[]) => {
+        if (vals && vals.length > 0) constraints.push(where(field, 'in', vals));
+        return builder;
+      },
+      order: (field: string, opts: { ascending?: boolean } = {}) => {
+        constraints.push(orderBy(field, opts.ascending ? 'asc' : 'desc'));
+        return builder;
+      },
+      limit: (n: number) => {
+        constraints.push(limitConstraint(n));
+        return builder;
+      },
+      then: (resolve: any, reject: any) => {
+        executor().then(resolve).catch(reject);
+      }
+    };
+    return builder;
   }
-  interface ImportMeta {
-    readonly env: ImportMetaEnv;
+
+  insert(data: any | any[]) {
+    const arr = Array.isArray(data) ? data : [data];
+    const executor = async () => {
+      try {
+        const results = [];
+        for (const item of arr) {
+          const id = item.id || crypto.randomUUID();
+          const docRef = doc(db, this.tableName, id);
+          await setDoc(docRef, { ...item, id }, { merge: true });
+          results.push({ id, ...item });
+        }
+        return { data: results.length === 1 ? results[0] : results, error: null };
+      } catch (err: any) {
+        console.error("Firestore Insert Error:", err);
+        return { data: null, error: err };
+      }
+    };
+
+    const builder = {
+      select: () => {
+        const selBuilder = {
+          single: () => ({
+            then: (res: any, rej: any) => executor().then(({ data, error }) => res({ data: Array.isArray(data) ? data[0] : data, error })).catch(rej)
+          }),
+          then: (res: any, rej: any) => executor().then(res).catch(rej)
+        };
+        return selBuilder;
+      },
+      then: (res: any, rej: any) => executor().then(res).catch(rej)
+    }
+    return builder;
+  }
+
+  update(data: any) {
+    let conditions: { field: string, val: any }[] = [];
+    const executor = async () => {
+      try {
+        if (conditions.length === 1 && conditions[0].field === 'id') {
+          const docRef = doc(db, this.tableName, conditions[0].val);
+          await updateDoc(docRef, data);
+        } else {
+          console.warn("Complex update without ID not fully supported in simple adapter");
+        }
+        return { data: null, error: null };
+      } catch (err: any) {
+        return { data: null, error: err };
+      }
+    };
+
+    const builder = {
+      eq: (field: string, val: any) => {
+        conditions.push({ field, val });
+        return builder;
+      },
+      then: (res: any, rej: any) => executor().then(res).catch(rej)
+    };
+    return builder;
+  }
+
+  upsert(data: any) {
+    return this.insert(data);
+  }
+
+  delete() {
+    let conditions: { field: string, val: any }[] = [];
+    const executor = async () => {
+      try {
+        if (conditions.length === 1 && conditions[0].field === 'id') {
+          const docRef = doc(db, this.tableName, conditions[0].val);
+          await deleteDoc(docRef);
+        } else {
+          console.warn("Complex delete without ID not fully supported in simple adapter");
+        }
+        return { data: null, error: null };
+      } catch (err: any) {
+        return { data: null, error: err };
+      }
+    };
+
+    const builder = {
+      eq: (field: string, val: any) => {
+        conditions.push({ field, val });
+        return builder;
+      },
+      then: (res: any, rej: any) => executor().then(res).catch(rej)
+    };
+    return builder;
   }
 }
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+export const supabase = {
+  from: (table: string) => new FirestoreQueryAdapter(table),
+  auth: {
+    getUser: async () => {
+      const user = auth.currentUser;
+      if (user) {
+        return { data: { user: { email: user.email, user_metadata: { name: user.displayName } } }, error: null };
+      }
+      return { data: { user: null }, error: null };
+    },
+    signOut: async () => {
+      await auth.signOut();
+    }
+  },
+  channel: (name: string) => ({
+    on: () => ({ subscribe: () => { } }),
+    removeChannel: () => { }
+  }),
+  removeChannel: () => { }
+};
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables. Check your .env file.');
-}
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 // ─── Type-safe database helpers ──────────────────────────────────────────────
 
