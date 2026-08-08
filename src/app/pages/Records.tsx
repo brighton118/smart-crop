@@ -25,7 +25,7 @@ export function Records() {
               className="data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-md border border-gray-200 bg-white hover:bg-gray-50 py-3 flex items-center justify-center gap-2 rounded-lg transition-all"
             >
               <Sprout className="w-4 h-4" />
-              Planting & Batches
+              Planting
             </TabsTrigger>
             <TabsTrigger
               value="spraying"
@@ -39,7 +39,7 @@ export function Records() {
               className="data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:shadow-md border border-gray-200 bg-white hover:bg-gray-50 py-3 flex items-center justify-center gap-2 rounded-lg transition-all"
             >
               <PackageCheck className="w-4 h-4" />
-              Harvesting
+              Harvesting & Post-Harvest
             </TabsTrigger>
           </TabsList>
 
