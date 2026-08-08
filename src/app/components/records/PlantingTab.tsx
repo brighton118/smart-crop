@@ -233,7 +233,7 @@ export function PlantingTab() {
             <TabsContent value="planting-records" className="mt-0 outline-none">
                 <Tabs defaultValue="all-planting">
                     <TabsList className="mb-4">
-                        <TabsTrigger value="all-planting">All Regural Planting</TabsTrigger>
+                        <TabsTrigger value="all-planting">Planting</TabsTrigger>
                         <TabsTrigger value="transplanting">Transplanting</TabsTrigger>
                     </TabsList>
 

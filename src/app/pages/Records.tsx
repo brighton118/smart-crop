@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { PlantingTab } from "../components/records/PlantingTab";
 import { SprayingRecords } from "../components/records/SprayingRecords";
-import { HarvestGroupTab } from "../components/records/HarvestGroupTab";
+import { HarvestTab } from "../components/records/HarvestTab";
 import { Sprout, PackageCheck, Droplets } from "lucide-react";
 
 export function Records() {
@@ -35,11 +35,11 @@ export function Records() {
               Spraying
             </TabsTrigger>
             <TabsTrigger
-              value="harvesting_group"
+              value="harvesting"
               className="data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:shadow-md border border-gray-200 bg-white hover:bg-gray-50 py-3 flex items-center justify-center gap-2 rounded-lg transition-all"
             >
               <PackageCheck className="w-4 h-4" />
-              Harvesting & Post-Harvest
+              Harvesting
             </TabsTrigger>
           </TabsList>
 
@@ -49,8 +49,8 @@ export function Records() {
           <TabsContent value="spraying" className="mt-0 outline-none">
             <SprayingRecords />
           </TabsContent>
-          <TabsContent value="harvesting_group" className="mt-0 outline-none">
-            <HarvestGroupTab />
+          <TabsContent value="harvesting" className="mt-0 outline-none">
+            <HarvestTab />
           </TabsContent>
         </Tabs>
       </div>
