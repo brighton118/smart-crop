@@ -291,33 +291,31 @@ export function Alerts() {
 
   async function fetchAlerts(silent = false) {
     if (!silent) setLoading(true);
-    const data = await getOrCreateDefaultFarm(user!.id);
-    if (!data) return;
 
-    // Fetch all sensors for the zone
-    const { data: sensors } = await supabase
-      .from("Sensor")
-      .select("*")
-      .eq("zoneId", data.zone.id);
+    const [
+      farmData,
+      { data: allSensors },
+      { data: allAlerts }
+    ] = await Promise.all([
+      getOrCreateDefaultFarm(user!.uid),
+      supabase.from("Sensor").select("*"),
+      supabase.from("Alert")
+        .select("*, sensor:Sensor(*)")
+        .neq("status", "RESOLVED")
+        .order("createdAt", { ascending: false })
+    ]);
 
-    if (!sensors || sensors.length === 0) {
+    if (!farmData || !allSensors || !allAlerts) {
       setLoading(false);
       return;
     }
 
-    const sensorIds = sensors.map(s => s.id);
+    const zoneIds = farmData.zones.map((z: any) => z.id);
+    const validSensorIds = new Set(allSensors.filter((s: any) => zoneIds.includes(s.zoneId)).map((s: any) => s.id));
 
-    // Fetch alerts
-    const { data: alerts } = await supabase
-      .from("Alert")
-      .select("*, sensor:Sensor(*)")
-      .in("sensorId", sensorIds)
-      .neq("status", "RESOLVED")
-      .order("createdAt", { ascending: false });
+    const relevantAlerts = allAlerts.filter((a: any) => validSensorIds.has(a.sensorId));
 
-    if (alerts) {
-      processAlerts(alerts as any[]);
-    }
+    processAlerts(relevantAlerts as any[]);
     setLoading(false);
   }
 

@@ -53,6 +53,31 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    match /PlantingRecord/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /CultivationRecord/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /HarvestRecord/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /EquipmentEvent/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /EnvironmentalThreshold/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /Task/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /Notification/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /MaintenanceLog/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
     // 5. Catch-all fallback blocking unauthorized deep nested queries
     match /{document=**} {
       allow read: if isAuthenticated();    // Read-only default for misc items

@@ -2,7 +2,7 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "nodemon --ignore chroma/ --ignore vector_store/ --ignore *.sqlite src/index.ts",
@@ -26,6 +26,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "firebase-admin": "^14.2.0",
+    "firebase-functions": "^7.3.2",
     "langchain": "^1.5.4",
     "pg": "^8.22.0",
     "zod": "^4.4.3"

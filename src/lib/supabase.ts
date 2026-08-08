@@ -8,13 +8,13 @@ import { auth } from '../firebase/auth';
 class FirestoreQueryAdapter {
   constructor(public tableName: string) { }
 
-  select(fields: string = '*') {
+  select(fields: string = '*'): any {
     let constraints: any[] = [];
-    let _orderArg: any = null;
-    let _selectSubtables: boolean = false;
 
     // Some complex joins like `*, Fan(...)` we just ignore in simple NoSQL
-    if (fields && fields.includes('(')) _selectSubtables = true;
+    if (fields && fields.includes('(')) {
+      // Ignored in Firebase simple adapter
+    }
 
     const executor = async () => {
       try {
@@ -41,6 +41,18 @@ class FirestoreQueryAdapter {
         constraints.push(where(field, '==', val));
         return builder;
       },
+      neq: (field: string, val: any) => {
+        constraints.push(where(field, '!=', val));
+        return builder;
+      },
+      gte: (field: string, val: any) => {
+        constraints.push(where(field, '>=', val));
+        return builder;
+      },
+      lte: (field: string, val: any) => {
+        constraints.push(where(field, '<=', val));
+        return builder;
+      },
       in: (field: string, vals: any[]) => {
         if (vals && vals.length > 0) constraints.push(where(field, 'in', vals));
         return builder;
@@ -57,10 +69,10 @@ class FirestoreQueryAdapter {
         executor().then(resolve).catch(reject);
       }
     };
-    return builder;
+    return builder as any;
   }
 
-  insert(data: any | any[]) {
+  insert(data: any | any[]): any {
     const arr = Array.isArray(data) ? data : [data];
     const executor = async () => {
       try {
@@ -93,7 +105,7 @@ class FirestoreQueryAdapter {
     return builder;
   }
 
-  update(data: any) {
+  update(data: any): any {
     let conditions: { field: string, val: any }[] = [];
     const executor = async () => {
       try {
@@ -119,11 +131,11 @@ class FirestoreQueryAdapter {
     return builder;
   }
 
-  upsert(data: any) {
+  upsert(data: any): any {
     return this.insert(data);
   }
 
-  delete() {
+  delete(): any {
     let conditions: { field: string, val: any }[] = [];
     const executor = async () => {
       try {
@@ -164,10 +176,14 @@ export const supabase = {
       await auth.signOut();
     }
   },
-  channel: (name: string) => ({
-    on: () => ({ subscribe: () => { } }),
-    removeChannel: () => { }
-  }),
+  channel: (_name: string) => {
+    const chainable = {
+      on: () => chainable,
+      subscribe: () => { },
+      removeChannel: () => { }
+    };
+    return chainable;
+  },
   removeChannel: () => { }
 };
 
@@ -332,6 +348,38 @@ export interface DbPlantingRecord {
   plantingMethod: string | null;
   responsiblePerson: string | null;
   notes: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DbCloningRecord {
+  id: string;
+  batchId: string;
+  date: string;
+  variety: string;
+  number_of_clones: number;
+  planted_quantity: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DbSprayingRecord {
+  id: string;
+  batchId: string;
+  date: string;
+  field: string;
+  chemicalUsed: string;
+  time: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DbTransplantingRecord {
+  id: string;
+  date: string;
+  field: string;
+  variety: string;
+  number_of_plants: number;
   createdAt: string;
   updatedAt: string;
 }

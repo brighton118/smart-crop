@@ -12,8 +12,8 @@ import {
   TableRow,
 } from "../components/ui/table";
 import {
-  Search, Download, Calendar, Filter, Loader2, X, Thermometer, Wind, Droplets,
-  Fan as FanIcon, Snowflake, Activity, BarChart3, Clock, AlertTriangle
+  Download, Loader2, Thermometer, Wind, Droplets,
+  BarChart3
 } from "lucide-react";
 import { useAuth } from "../components/AuthProvider";
 import {
@@ -22,9 +22,6 @@ import {
   DbSensorReading,
   DbZone,
   DbCropBatch,
-  DbEquipmentEvent,
-  DbFan,
-  DbCooler,
   DbEnvironmentalThreshold
 } from "../../lib/supabase";
 import { getOrCreateDefaultFarm } from "../../lib/farmUtils";
@@ -70,23 +67,24 @@ export function DataAnalytics() {
 
   async function loadBaseData() {
     setLoading(true);
-    const farm = await getOrCreateDefaultFarm(user!.id);
+    const farm = await getOrCreateDefaultFarm(user!.uid);
     if (!farm) return;
 
-    // Load Zones (Drying Rooms)
-    const { data: z } = await supabase.from("Zone").select("*");
+    const [
+      { data: z },
+      { data: cb },
+      { data: sens },
+      { data: thr }
+    ] = await Promise.all([
+      supabase.from("Zone").select("*") as any,
+      supabase.from("CropBatch").select("*") as any,
+      supabase.from("Sensor").select("*") as any,
+      supabase.from("EnvironmentalThreshold").select("*") as any
+    ]);
+
     if (z) setZones(z);
-
-    // Load CropBatches
-    const { data: cb } = await supabase.from("CropBatch").select("*");
     if (cb) setBatches(cb);
-
-    // Load Sensors
-    const { data: sens } = await supabase.from("Sensor").select("*");
     if (sens) setSensors(sens);
-
-    // Load Thresholds
-    const { data: thr } = await supabase.from("EnvironmentalThreshold").select("*");
     if (thr) setThresholds(thr);
   }
 
@@ -263,7 +261,7 @@ export function DataAnalytics() {
               <label className="text-xs font-semibold text-gray-600 uppercase">Drying Batch</label>
               <select value={selectedBatch} onChange={e => setSelectedBatch(e.target.value)} className="w-full text-sm border p-2 rounded-md bg-white">
                 <option value="ALL">All Batches</option>
-                {batches.map(b => <option key={b.id} value={b.id}>{b.cropType} - {new Date(b.plantedDate).toLocaleDateString()}</option>)}
+                {batches.map(b => <option key={b.id} value={b.id}>{b.batchName} - {new Date(b.createdAt).toLocaleDateString()}</option>)}
               </select>
             </div>
             <div className="space-y-1">
@@ -295,10 +293,10 @@ export function DataAnalytics() {
           <Card className="overflow-hidden">
             <CardContent className="p-6 bg-gradient-to-r from-gray-50 to-white flex flex-col md:flex-row items-center gap-8">
               <div className="flex-1 space-y-2">
-                <h3 className="font-bold text-xl text-green-700">{activeBatch.cropType}</h3>
+                <h3 className="font-bold text-xl text-green-700">{activeBatch.batchName}</h3>
                 <div className="text-sm text-gray-600 gap-4 grid grid-cols-2">
-                  <p><strong>Started:</strong> {new Date(activeBatch.plantedDate).toLocaleDateString()}</p>
-                  <p><strong>Duration:</strong> {Math.floor((new Date().getTime() - new Date(activeBatch.plantedDate).getTime()) / (1000 * 60 * 60 * 24))} days</p>
+                  <p><strong>Started:</strong> {new Date(activeBatch.createdAt).toLocaleDateString()}</p>
+                  <p><strong>Duration:</strong> {Math.floor((new Date().getTime() - new Date(activeBatch.createdAt).getTime()) / (1000 * 60 * 60 * 24))} days</p>
                   <p><strong>Start Moisture:</strong> ~25%</p>
                   <p><strong>Target Moisture:</strong> 12%</p>
                 </div>

@@ -23,20 +23,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-
-      // --- DEV OVERRIDE ---
-      // Inject a dummy user directly so we can bypass Firebase authentication entirely during testing! 
-      if (!firebaseUser) {
-        const fakeUser = {
-          uid: "admin-bypass-id",
-          email: "development@tester.com",
-          displayName: "Dev Mode"
-        } as unknown as FirebaseUser;
-        setUser(fakeUser);
-        setLoading(false);
-        return;
-      }
-
       setUser(firebaseUser);
       setLoading(false);
     });

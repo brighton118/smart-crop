@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { PlantingTab } from "../components/records/PlantingTab";
-import { CultivationTab } from "../components/records/CultivationTab";
-import { HarvestTab } from "../components/records/HarvestTab";
-import { PostHarvestTab } from "../components/records/PostHarvestTab";
-import { ClipboardList, Sprout, Scissors, PackageCheck } from "lucide-react";
+import { SprayingRecords } from "../components/records/SprayingRecords";
+import { HarvestGroupTab } from "../components/records/HarvestGroupTab";
+import { Sprout, PackageCheck, Droplets } from "lucide-react";
 
 export function Records() {
   const [activeTab, setActiveTab] = useState("planting");
@@ -20,7 +19,7 @@ export function Records() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 w-full h-auto gap-2 bg-transparent p-0 mb-6">
+          <TabsList className="grid grid-cols-2 md:grid-cols-3 w-full h-auto gap-2 bg-transparent p-0 mb-6">
             <TabsTrigger
               value="planting"
               className="data-[state=active]:bg-green-600 data-[state=active]:text-white data-[state=active]:shadow-md border border-gray-200 bg-white hover:bg-gray-50 py-3 flex items-center justify-center gap-2 rounded-lg transition-all"
@@ -29,39 +28,29 @@ export function Records() {
               Planting & Batches
             </TabsTrigger>
             <TabsTrigger
-              value="cultivation"
-              className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-md border border-gray-200 bg-white hover:bg-gray-50 py-3 flex items-center justify-center gap-2 rounded-lg transition-all"
+              value="spraying"
+              className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-md border border-gray-200 bg-white hover:bg-gray-50 py-3 flex items-center justify-center gap-2 rounded-lg transition-all"
             >
-              <ClipboardList className="w-4 h-4" />
-              Cultivation Logs
+              <Droplets className="w-4 h-4" />
+              Spraying
             </TabsTrigger>
             <TabsTrigger
-              value="harvest"
+              value="harvesting_group"
               className="data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:shadow-md border border-gray-200 bg-white hover:bg-gray-50 py-3 flex items-center justify-center gap-2 rounded-lg transition-all"
             >
-              <Scissors className="w-4 h-4" />
-              Harvesting
-            </TabsTrigger>
-            <TabsTrigger
-              value="postharvest"
-              className="data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md border border-gray-200 bg-white hover:bg-gray-50 py-3 flex items-center justify-center gap-2 rounded-lg transition-all"
-            >
               <PackageCheck className="w-4 h-4" />
-              Post-Harvest
+              Harvesting & Post-Harvest
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="planting" className="mt-0 outline-none">
             <PlantingTab />
           </TabsContent>
-          <TabsContent value="cultivation" className="mt-0 outline-none">
-            <CultivationTab />
+          <TabsContent value="spraying" className="mt-0 outline-none">
+            <SprayingRecords />
           </TabsContent>
-          <TabsContent value="harvest" className="mt-0 outline-none">
-            <HarvestTab />
-          </TabsContent>
-          <TabsContent value="postharvest" className="mt-0 outline-none">
-            <PostHarvestTab />
+          <TabsContent value="harvesting_group" className="mt-0 outline-none">
+            <HarvestGroupTab />
           </TabsContent>
         </Tabs>
       </div>
