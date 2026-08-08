@@ -5,7 +5,11 @@ export interface ChatMessage {
 
 export const sendAiChatMessage = async (message: string, history: ChatMessage[] = []): Promise<string> => {
     try {
-        const res = await fetch('http://localhost:5000/api/ai/chat', {
+        const apiUrl = import.meta.env.DEV
+            ? 'http://localhost:5000/api/ai/chat'
+            : '/api/ai/chat';
+
+        const res = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
