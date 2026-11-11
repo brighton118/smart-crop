@@ -39,7 +39,7 @@ export function Dashboard() {
     async function loadDashboardData() {
       setLoading(true);
       // 1. Get Farm & Zone
-      const data = await getOrCreateDefaultFarm(user!.id);
+      const data = await getOrCreateDefaultFarm(user!.uid || user!.id!);
       if (!data) {
         setLoading(false);
         return;

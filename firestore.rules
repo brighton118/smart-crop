@@ -4,7 +4,6 @@ service cloud.firestore {
     
     // Base helper to check if a user is securely logged into Firebase Auth
     function isAuthenticated() {
-      // In a production scenario, we'd also verify email verification or custom claims (RBAC)
       return request.auth != null;
     }
 
@@ -14,7 +13,6 @@ service cloud.firestore {
     }
 
     // 2. Core Entities: authenticated users have access to Farm structures.
-    // Future iteration: implement Role-Based Access Control via `request.auth.token.role == "ADMIN"` 
     match /Farm/{farmId} {
       allow read, write: if isAuthenticated();
     }
@@ -23,16 +21,24 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
-    // 3. Telemetry and Equipment: Devices push via IoT Admin SDKs, so clients only need standard auth reads/writes.
+    // 3. Telemetry, Hardware Topology, and Equipment
     match /Sensor/{document=**} {
       allow read, write: if isAuthenticated();
     }
     
     match /SensorReading/{document=**} {
-      allow read, write: if isAuthenticated(); // Frontend plots graphs
+      allow read, write: if isAuthenticated();
     }
 
     match /Device/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /HardwareConnection/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /RelayModule/{document=**} {
       allow read, write: if isAuthenticated();
     }
 
@@ -53,16 +59,39 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
+    match /CropRecord/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // 5. Farm Data Lifecycle Collections
     match /PlantingRecord/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /SeedRecord/{document=**} {
       allow read, write: if isAuthenticated();
     }
     match /CloningRecord/{document=**} {
       allow read, write: if isAuthenticated();
     }
-    match /SprayingRecord/{document=**} {
+    match /TransplantingRecord/{document=**} {
       allow read, write: if isAuthenticated();
     }
-    match /TransplantingRecord/{document=**} {
+    match /VegetativeRecord/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /DiscardedRecord/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /PreHarvestRecord/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /PostHarvestRecord/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /StoragePackagingRecord/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+    match /SprayingRecord/{document=**} {
       allow read, write: if isAuthenticated();
     }
     match /CultivationRecord/{document=**} {
@@ -77,6 +106,9 @@ service cloud.firestore {
     match /EnvironmentalThreshold/{document=**} {
       allow read, write: if isAuthenticated();
     }
+    match /KnowledgeBase/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
     match /Task/{document=**} {
       allow read, write: if isAuthenticated();
     }
@@ -87,10 +119,10 @@ service cloud.firestore {
       allow read, write: if isAuthenticated();
     }
 
-    // 5. Catch-all fallback blocking unauthorized deep nested queries
+    // 6. Catch-all fallback blocking unauthorized deep nested queries
     match /{document=**} {
-      allow read: if isAuthenticated();    // Read-only default for misc items
-      allow write: if false;               // Explicitly block unknown writes
+      allow read: if isAuthenticated();
+      allow write: if false;
     }
   }
 }

@@ -9,9 +9,9 @@ import { ragService } from './ai.rag';
 
 const queryKnowledgeBaseTool = new DynamicStructuredTool({
     name: 'query_knowledge_base',
-    description: 'Use this tool to search the smartCrop knowledge base for information related to cannabis cultivation, growth stages, environmental management, pests, diseases, etc. Always use this when answering domain-specific cannabis questions.',
+    description: 'Use this tool to search the smartCrop Firebase knowledge base for information related to cannabis cultivation, growth stages (Seeds, Clones, Transplanting, Vegetative Topping/Pruning, Discarded, Pre_Harvest, Post_Harvest, Storage & Packaging), environmental management, pests, and diseases.',
     schema: z.object({
-        query: z.string().describe('The detailed search query for the cannabis vector database.'),
+        query: z.string().describe('The detailed search query for the cannabis knowledge base.'),
     }),
     func: async ({ query }) => {
         return await ragService.queryContext(query);
@@ -20,18 +20,17 @@ const queryKnowledgeBaseTool = new DynamicStructuredTool({
 
 const tools = [...aiTools, queryKnowledgeBaseTool];
 
-const systemPrompt = `You are "smartCrop AI", an expert AI assistant specializing in Cannabis Cultivation Intelligence and smartCrop System Management.
+const systemPrompt = `You are "smartCrop AI", an expert AI assistant for KindBuds Ltd. specializing in Cannabis Cultivation Intelligence and smartCrop System Management on Firebase.
 You have access to two types of knowledge:
-1. Live System Data Tools (to check sensors, equipment, alerts, and farm status).
+1. Live Firebase Firestore Data Tools (to check sensors, equipment, alerts, grow rooms / cultivation zones, and all Farm Data lifecycle records: Planting Seeds/Clones, Transplanting, Vegetative Topping/Pruning/Discarded, Pre_Harvest, Post_Harvest, and Storage & Packaging).
 2. Cannabis Knowledge Base (via the 'query_knowledge_base' tool for domain queries like pests, climate requirements, drying, etc.).
 
 CRITICAL RULES:
 - Never invent sensor readings, database records, or hardware status.
-- Use the knowledge base tool for generic cannabis cultivation questions.
+- Use the knowledge base tool for cannabis cultivation questions.
 - If live data is unavailable, clearly state it.
 - Never directly expose API keys or passwords.
-- Always provide a grounded response.
-- Combine insights: if a user asks about an alert, use tools to get the alert and use the knowledge base to explain the context of why it's a problem for cannabis setup.`;
+- Always provide a grounded response.`;
 
 export class AiService {
     private static instance: AiService;
@@ -45,20 +44,23 @@ export class AiService {
         return AiService.instance;
     }
 
+    private resolveProvider(): string {
+        if (process.env.AI_PROVIDER) return process.env.AI_PROVIDER;
+        if (process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY) return 'google';
+        if (process.env.OPENAI_API_KEY) return 'openai';
+        return 'ollama';
+    }
+
     public async chat(message: string, history: Array<{ role: string; content: string }> = []): Promise<string> {
+        const provider = this.resolveProvider();
         try {
-            const provider = process.env.AI_PROVIDER || 'ollama';
             let llm: any;
 
-            if (provider === 'ollama') {
-                llm = new ChatOllama({
-                    baseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
-                    model: process.env.OLLAMA_MODEL || 'llama3.1',
-                    temperature: 0.2,
-                });
-            } else if (provider === 'google') {
-                if (!process.env.GOOGLE_API_KEY) throw new Error('GOOGLE_API_KEY is not configured.');
+            if (provider === 'google') {
+                const apiKey = process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
+                if (!apiKey) throw new Error('GOOGLE_API_KEY is not configured.');
                 llm = new ChatGoogleGenerativeAI({
+                    apiKey,
                     model: process.env.GOOGLE_MODEL || 'gemini-2.0-flash',
                     temperature: 0.2,
                 });
@@ -67,6 +69,12 @@ export class AiService {
                 llm = new ChatOpenAI({
                     modelName: process.env.OPENAI_MODEL || 'gpt-4o-mini',
                     temperature: 0.2
+                });
+            } else if (provider === 'ollama') {
+                llm = new ChatOllama({
+                    baseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
+                    model: process.env.OLLAMA_MODEL || 'llama3.1',
+                    temperature: 0.2,
                 });
             } else {
                 throw new Error(`Unsupported AI_PROVIDER: ${provider}`);
@@ -86,16 +94,11 @@ export class AiService {
         } catch (error: any) {
             console.error('Agent Execution Error:', error);
 
-            const provider = process.env.AI_PROVIDER || 'ollama';
-
-            if (provider === 'ollama') {
-                if (error.message.includes('fetch') || error.message.includes('ECONNREFUSED')) {
-                    return `Local smartCrop AI is currently unavailable. Please ensure Ollama is running on your machine (http://localhost:11434).`;
-                }
-                return `Ollama execution error: ${error.message}`;
+            if (provider === 'ollama' && (error.message?.includes('fetch') || error.message?.includes('ECONNREFUSED'))) {
+                return `smartCrop AI is configured to use Ollama locally, which is unreachable in Firebase Cloud Functions. Set GOOGLE_API_KEY (with AI_PROVIDER=google) or OPENAI_API_KEY in your Firebase environment variables.`;
             }
 
-            return `smartCrop AI could not connect to the configured ${provider} service. Please check your API configuration. Details: ${error.message}`;
+            return `smartCrop AI could not connect to the configured ${provider} service. Details: ${error.message}`;
         }
     }
 }

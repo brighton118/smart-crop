@@ -106,8 +106,8 @@ export function DataAnalytics() {
     const { data: reads } = await supabase
       .from("SensorReading")
       .select("*")
-      .gte("timestamp", since.getTime())
-      .lte("timestamp", to.getTime())
+      .gte("timestamp", since.toISOString())
+      .lte("timestamp", to.toISOString())
       .order("timestamp", { ascending: false });
 
     // Fetch Equipment Events
@@ -179,7 +179,7 @@ export function DataAnalytics() {
   const paginatedReadings = filteredReadings.slice((paginationPage - 1) * PAGE_SIZE, paginationPage * PAGE_SIZE);
 
   function handleExport() {
-    const csvRows = ["Timestamp,Sensor,Drying Room,Temperature,Humidity,Cannabis Moisture"];
+    const csvRows = ["Timestamp,Sensor,Grow Zone,Temperature,Humidity,Cannabis Moisture"];
     filteredReadings.forEach(r => {
       const s = sensors.find(sen => sen.id === r.sensorId);
       const z = zones.find(zn => zn.id === s?.zoneId);
@@ -189,7 +189,7 @@ export function DataAnalytics() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `drying_analytics_${new Date().getTime()}.csv`;
+    a.download = `cultivation_analytics_${new Date().getTime()}.csv`;
     a.click();
   }
 
@@ -204,7 +204,7 @@ export function DataAnalytics() {
         <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 flex items-center gap-2">
           <BarChart3 className="w-8 h-8 text-green-600" /> Data & Analytics
         </h1>
-        <p className="text-gray-600 mt-1">Historical environmental readings, drying performance, and equipment analytics</p>
+        <p className="text-gray-600 mt-1">Historical environmental readings, cultivation performance, and sensor analytics</p>
       </div>
 
       {/* Top Stats Cards */}
@@ -232,7 +232,7 @@ export function DataAnalytics() {
         </Card>
         <Card className="border-l-4 border-l-teal-600">
           <CardContent className="p-4">
-            <p className="text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider flex items-center gap-1"><Droplets className="w-3 h-3" /> Avg Cannabis Moisture</p>
+            <p className="text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider flex items-center gap-1"><Droplets className="w-3 h-3" /> Avg Moisture</p>
             <p className="text-2xl font-bold text-gray-900">{totalReadings > 0 ? avgMoisture : '--'}%</p>
             <p className="text-xs text-teal-600 font-medium mt-1">Current batch average</p>
           </CardContent>
@@ -241,7 +241,7 @@ export function DataAnalytics() {
           <CardContent className="p-4">
             <p className="text-xs text-gray-500 font-semibold mb-1 uppercase tracking-wider">Active Batches</p>
             <p className="text-2xl font-bold text-gray-900">{activeBatchesCount}</p>
-            <p className="text-xs text-gray-400 mt-1">Currently drying</p>
+            <p className="text-xs text-gray-400 mt-1">Currently active</p>
           </CardContent>
         </Card>
       </div>
@@ -251,14 +251,14 @@ export function DataAnalytics() {
         <CardContent className="p-4 flex flex-wrap gap-4 items-center justify-between">
           <div className="flex flex-wrap gap-4 items-center">
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-600 uppercase">Drying Room</label>
+              <label className="text-xs font-semibold text-gray-600 uppercase">Cultivation Zone</label>
               <select value={selectedZone} onChange={e => setSelectedZone(e.target.value)} className="w-full text-sm border p-2 rounded-md bg-white">
-                <option value="ALL">All Rooms</option>
+                <option value="ALL">All Zones</option>
                 {zones.map(z => <option key={z.id} value={z.id}>{z.name}</option>)}
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-gray-600 uppercase">Drying Batch</label>
+              <label className="text-xs font-semibold text-gray-600 uppercase">Crop Batch</label>
               <select value={selectedBatch} onChange={e => setSelectedBatch(e.target.value)} className="w-full text-sm border p-2 rounded-md bg-white">
                 <option value="ALL">All Batches</option>
                 {batches.map(b => <option key={b.id} value={b.id}>{b.batchName} - {new Date(b.createdAt).toLocaleDateString()}</option>)}
@@ -286,10 +286,10 @@ export function DataAnalytics() {
         </CardContent>
       </Card>
 
-      {/* DRYING BATCH PERFORMANCE WIDGET */}
+      {/* CROP BATCH PERFORMANCE WIDGET */}
       {activeBatch && (
         <div>
-          <h2 className="text-lg font-bold text-gray-900 border-b pb-2 mb-4">DRYING BATCH PERFORMANCE</h2>
+          <h2 className="text-lg font-bold text-gray-900 border-b pb-2 mb-4">BATCH PERFORMANCE</h2>
           <Card className="overflow-hidden">
             <CardContent className="p-6 bg-gradient-to-r from-gray-50 to-white flex flex-col md:flex-row items-center gap-8">
               <div className="flex-1 space-y-2">
@@ -297,13 +297,13 @@ export function DataAnalytics() {
                 <div className="text-sm text-gray-600 gap-4 grid grid-cols-2">
                   <p><strong>Started:</strong> {new Date(activeBatch.createdAt).toLocaleDateString()}</p>
                   <p><strong>Duration:</strong> {Math.floor((new Date().getTime() - new Date(activeBatch.createdAt).getTime()) / (1000 * 60 * 60 * 24))} days</p>
-                  <p><strong>Start Moisture:</strong> ~25%</p>
+                  <p><strong>Initial Moisture:</strong> ~25%</p>
                   <p><strong>Target Moisture:</strong> 12%</p>
                 </div>
                 <Badge className="bg-blue-500 hover:bg-blue-600">Status: Monitoring</Badge>
               </div>
               <div className="flex-1 w-full bg-white border p-4 rounded-xl shadow-sm">
-                <p className="text-sm font-semibold mb-2">Moisture Reduction Progress</p>
+                <p className="text-sm font-semibold mb-2">Moisture Optimization Progress</p>
                 <div className="relative w-full h-4 bg-gray-200 rounded-full overflow-hidden">
                   <div className="absolute top-0 left-0 h-full bg-teal-500 transition-all" style={{ width: '60%' }}></div>
                 </div>
@@ -318,9 +318,9 @@ export function DataAnalytics() {
         </div>
       )}
 
-      {/* DRYING ENVIRONMENT OVERVIEW */}
+      {/* CULTIVATION ENVIRONMENT OVERVIEW */}
       <div>
-        <h2 className="text-lg font-bold text-gray-900 border-b pb-2 mb-4">DRYING ENVIRONMENT OVERVIEW</h2>
+        <h2 className="text-lg font-bold text-gray-900 border-b pb-2 mb-4">CULTIVATION ENVIRONMENT OVERVIEW</h2>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>

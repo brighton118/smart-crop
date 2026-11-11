@@ -141,6 +141,78 @@ export async function seedDatabaseIfEmpty(zoneId: string) {
     try {
       await supabase.from("CropBatch").insert(cropBatches);
       await supabase.from("PlantingRecord").insert(plantingRecords);
+
+      // Seed Plants & Mother Lineage with Fixed QRs if empty
+      const { data: existingPlants } = await supabase.from("Plant").select("id").limit(1);
+      if (!existingPlants || existingPlants.length === 0) {
+        const motherId1 = crypto.randomUUID();
+        const motherTag1 = "KB-MOM-OGK-01";
+        const mother1 = {
+          id: motherId1,
+          tag: motherTag1,
+          qrCode: motherTag1,
+          type: "MOTHER",
+          variety: "OG Kush",
+          field: "Mother Room 1",
+          stage: "VEGETATIVE",
+          plantingDate: "2026-01-15",
+          notes: "Primary OG Kush mother stock, high vigor.",
+          history: [{
+            timestamp: new Date().toISOString(),
+            event: "REGISTERED_MOTHER",
+            details: "Master Mother Plant registered with permanent QR"
+          }],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        const clone1 = {
+          id: crypto.randomUUID(),
+          tag: "KB-MOM-OGK-01-C01",
+          qrCode: "KB-MOM-OGK-01-C01",
+          type: "CLONE",
+          variety: "OG Kush",
+          motherPlantId: motherId1,
+          motherTag: motherTag1,
+          cloneIndex: 1,
+          field: "Vegetative Room A",
+          stage: "VEGETATIVE",
+          plantingDate: "2026-02-01",
+          toppingDate: "2026-02-18",
+          notes: "Sub-clone cutting #1 from Mother KB-MOM-OGK-01",
+          history: [{
+            timestamp: new Date().toISOString(),
+            event: "CUTTING_PROPAGATED",
+            details: "Sub-QR cutting #1 from Mother KB-MOM-OGK-01"
+          }],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        const clone2 = {
+          id: crypto.randomUUID(),
+          tag: "KB-MOM-OGK-01-C02",
+          qrCode: "KB-MOM-OGK-01-C02",
+          type: "CLONE",
+          variety: "OG Kush",
+          motherPlantId: motherId1,
+          motherTag: motherTag1,
+          cloneIndex: 2,
+          field: "Vegetative Room A",
+          stage: "VEGETATIVE",
+          plantingDate: "2026-02-01",
+          notes: "Sub-clone cutting #2 from Mother KB-MOM-OGK-01",
+          history: [{
+            timestamp: new Date().toISOString(),
+            event: "CUTTING_PROPAGATED",
+            details: "Sub-QR cutting #2 from Mother KB-MOM-OGK-01"
+          }],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+
+        await supabase.from("Plant").insert([mother1, clone1, clone2]);
+      }
     } catch (e) {
       console.warn("Could not insert seed batches/planting:", e);
     }

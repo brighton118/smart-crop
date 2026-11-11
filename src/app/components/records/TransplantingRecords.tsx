@@ -4,8 +4,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "../ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-import { Search, Plus, Loader2, Edit2, Trash2, Sprout } from "lucide-react";
+import { Search, Plus, Loader2, Edit2, Trash2, Sprout, ClipboardList } from "lucide-react";
 import { supabase, DbTransplantingRecord } from "../../../lib/supabase";
 import { toast } from "sonner";
 import { useAuth } from "../../components/AuthProvider";
@@ -22,9 +21,9 @@ export function TransplantingRecords() {
 
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
-        field: "Field 1",
         variety: "",
-        number_of_plants: ""
+        number_of_plants: "",
+        field: "Field 1",
     });
 
     useEffect(() => {
@@ -54,9 +53,9 @@ export function TransplantingRecords() {
         setSelectedRecord(null);
         setFormData({
             date: new Date().toISOString().split('T')[0],
-            field: "Field 1",
             variety: "",
-            number_of_plants: ""
+            number_of_plants: "",
+            field: "Field 1",
         });
         setIsDialogOpen(true);
     };
@@ -65,23 +64,23 @@ export function TransplantingRecords() {
         setSelectedRecord(record);
         setFormData({
             date: new Date(record.date).toISOString().split('T')[0],
-            field: record.field || "Field 1",
             variety: record.variety || "",
-            number_of_plants: record.number_of_plants?.toString() || ""
+            number_of_plants: record.number_of_plants?.toString() || "",
+            field: record.field || "Field 1",
         });
         setIsDialogOpen(true);
     };
 
     const handleSave = async () => {
-        if (!formData.date || !formData.field || !formData.variety) {
-            toast.error("Please fill in required fields (Date, Field, Variety)");
+        if (!formData.date || !formData.variety || !formData.field) {
+            toast.error("Please fill in required fields (Date, Variety, No. of Plants, Field)");
             return;
         }
 
         const numPlants = Number(formData.number_of_plants);
 
         if (isNaN(numPlants) || numPlants <= 0) {
-            toast.error("Number of plants must be a positive number");
+            toast.error("No. of Plants must be a positive number");
             return;
         }
 
@@ -89,9 +88,9 @@ export function TransplantingRecords() {
         try {
             const payload = {
                 date: new Date(formData.date).toISOString(),
-                field: formData.field,
                 variety: formData.variety,
                 number_of_plants: numPlants,
+                field: formData.field,
                 updatedAt: new Date().toISOString()
             };
 
@@ -150,80 +149,98 @@ export function TransplantingRecords() {
 
     return (
         <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Card className="border-l-4 border-l-emerald-500 shadow-sm">
-                    <CardContent className="p-6 flex flex-col justify-center">
-                        <p className="text-sm font-medium text-gray-600 mb-1">Total Records</p>
-                        <p className="text-3xl font-bold text-gray-900">{records.length}</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full lg:w-2/3">
+                <Card className="shadow-sm border-0 border-l-4 border-l-[#0fa968] rounded-2xl bg-white/95 backdrop-blur-md">
+                    <CardContent className="p-6 flex items-center justify-between">
+                        <div className="w-14 h-14 bg-[#e6f4ed] rounded-2xl flex items-center justify-center shrink-0">
+                            <ClipboardList className="w-7 h-7 text-[#0fa968]" />
+                        </div>
+                        <div className="flex flex-col items-end text-right">
+                            <p className="text-sm font-semibold text-slate-500 mb-0.5">Total Transplanting Records</p>
+                            <p className="text-4xl font-bold text-slate-800">{records.length}</p>
+                        </div>
                     </CardContent>
                 </Card>
-                <Card className="border-l-4 border-l-blue-500 shadow-sm">
-                    <CardContent className="p-6 flex flex-col justify-center">
-                        <p className="text-sm font-medium text-gray-600 mb-1">Total Plants Transplanted</p>
-                        <p className="text-3xl font-bold text-gray-900">{totalPlants}</p>
+                <Card className="shadow-sm border-0 border-l-4 border-l-[#3b82f6] rounded-2xl bg-white/95 backdrop-blur-md">
+                    <CardContent className="p-6 flex items-center justify-between">
+                        <div className="w-14 h-14 bg-[#eaf4fe] rounded-2xl flex items-center justify-center shrink-0">
+                            <Sprout className="w-7 h-7 text-[#3b82f6]" />
+                        </div>
+                        <div className="flex flex-col items-end text-right">
+                            <p className="text-sm font-semibold text-slate-500 mb-0.5">Total Plants Transplanted</p>
+                            <p className="text-4xl font-bold text-slate-800">{totalPlants}</p>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
 
-            <Card className="shadow-sm border border-gray-200">
-                <CardHeader className="border-b bg-gray-50/50">
+            <Card className="shadow-sm border border-gray-100 rounded-2xl bg-white/95 backdrop-blur-md overflow-hidden">
+                <CardHeader className="border-b bg-white/50 p-5 px-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <CardTitle className="text-lg text-gray-800">🪴 Transplanting Records</CardTitle>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-gray-100/80 p-2 rounded-lg">
+                                <span role="img" aria-label="transplant" className="text-xl">🪴</span>
+                            </div>
+                            <CardTitle className="text-[1.15rem] font-bold text-slate-800 tracking-tight">Transplanting Records</CardTitle>
+                        </div>
+                        <div className="flex items-center gap-3">
                             <div className="relative w-full sm:w-64">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
                                 <Input
-                                    placeholder="Search field, variety..."
+                                    placeholder="Search variety, field..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-10 bg-white"
+                                    className="pl-9 bg-gray-50 border-gray-200 focus-visible:ring-emerald-500 rounded-xl"
                                 />
                             </div>
-                            <Button onClick={openNew} className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white">
+                            <Button onClick={openNew} className="shrink-0 bg-[#0fa968] hover:bg-emerald-700 text-white rounded-xl shadow-sm px-5 font-semibold">
                                 <Plus className="w-4 h-4 mr-2" />
-                                New Record
+                                New Transplanting Record
                             </Button>
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="p-0 bg-white/50">
                     <Table>
-                        <TableHeader className="bg-gray-50">
-                            <TableRow>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Field</TableHead>
-                                <TableHead>Variety</TableHead>
-                                <TableHead>No. of Plants</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
+                        <TableHeader>
+                            <TableRow className="border-b border-gray-100 hover:bg-transparent">
+                                <TableHead className="font-semibold text-slate-600 px-6 py-4">Date</TableHead>
+                                <TableHead className="font-semibold text-slate-600 px-6 py-4">Variety</TableHead>
+                                <TableHead className="font-semibold text-slate-600 px-6 py-4">No. of Plants</TableHead>
+                                <TableHead className="font-semibold text-slate-600 px-6 py-4">Field</TableHead>
+                                <TableHead className="font-semibold text-slate-600 text-right px-6 py-4">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {loading && filteredData.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-6">
-                                        <Loader2 className="w-5 h-5 animate-spin mx-auto text-emerald-600" />
+                                    <TableCell colSpan={5} className="text-center py-12">
+                                        <Loader2 className="w-6 h-6 animate-spin mx-auto text-[#0fa968]" />
                                     </TableCell>
                                 </TableRow>
                             ) : filteredData.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-                                        <Sprout className="w-10 h-10 mx-auto text-gray-300 mb-2" />
-                                        No transplanting records yet.
+                                    <TableCell colSpan={5} className="text-center py-16 bg-white hover:bg-white">
+                                        <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center mx-auto mb-4 border border-gray-100">
+                                            <Sprout className="w-8 h-8 text-[#0fa968]" />
+                                        </div>
+                                        <p className="text-lg font-bold text-slate-800 mb-1">No transplanting records yet</p>
+                                        <p className="text-sm text-slate-500">Record Date, Variety, No. of Plants, and Field when transplanting.</p>
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                filteredData.map((r) => (
-                                    <TableRow key={r.id}>
-                                        <TableCell>{new Date(r.date).toLocaleDateString()}</TableCell>
-                                        <TableCell className="font-medium text-gray-900">{r.field}</TableCell>
-                                        <TableCell>{r.variety}</TableCell>
-                                        <TableCell>{r.number_of_plants}</TableCell>
-                                        <TableCell className="text-right">
+                                filteredData.map((r, i) => (
+                                    <TableRow key={r.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50/50"}>
+                                        <TableCell className="px-6 py-4 font-medium text-slate-700">{new Date(r.date).toLocaleDateString()}</TableCell>
+                                        <TableCell className="px-6 py-4 font-medium text-slate-700">{r.variety}</TableCell>
+                                        <TableCell className="px-6 py-4 text-slate-600">{r.number_of_plants}</TableCell>
+                                        <TableCell className="px-6 py-4 font-medium text-slate-800">{r.field}</TableCell>
+                                        <TableCell className="text-right px-6 py-4">
                                             <div className="flex items-center justify-end gap-1">
-                                                <Button variant="ghost" size="icon" className="text-gray-500 hover:text-blue-600" onClick={() => openEdit(r)}>
+                                                <Button variant="ghost" size="icon" className="text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" onClick={() => openEdit(r)}>
                                                     <Edit2 className="w-4 h-4" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="text-gray-500 hover:text-red-600" onClick={() => confirmDelete(r)}>
+                                                <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors" onClick={() => confirmDelete(r)}>
                                                     <Trash2 className="w-4 h-4" />
                                                 </Button>
                                             </div>
@@ -237,40 +254,44 @@ export function TransplantingRecords() {
             </Card>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+                <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto rounded-2xl">
                     <DialogHeader>
-                        <DialogTitle>{selectedRecord ? "Edit Transplanting Record" : "Add Transplanting Record"}</DialogTitle>
-                        <DialogDescription>Log transplanting quantities and destination fields.</DialogDescription>
+                        <DialogTitle className="text-xl font-bold">{selectedRecord ? "Edit Transplanting Record" : "Add Transplanting Record"}</DialogTitle>
+                        <DialogDescription className="text-slate-500">Record Date, Variety, No. of Plants, and Field.</DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
                         <div className="grid gap-2">
-                            <label className="text-sm font-medium">Date <span className="text-red-500">*</span></label>
-                            <Input type="date" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
+                            <label className="text-sm font-semibold text-slate-700">Date <span className="text-red-500">*</span></label>
+                            <Input type="date" className="rounded-xl border-gray-200" value={formData.date} onChange={(e) => setFormData({ ...formData, date: e.target.value })} />
                         </div>
                         <div className="grid gap-2">
-                            <label className="text-sm font-medium">Destination Field <span className="text-red-500">*</span></label>
-                            <Select value={formData.field} onValueChange={(v) => setFormData({ ...formData, field: v })}>
-                                <SelectTrigger><SelectValue placeholder="Select Field" /></SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Greenhouse">Greenhouse</SelectItem>
-                                    <SelectItem value="Field 1">Field 1</SelectItem>
-                                    <SelectItem value="Field 2">Field 2</SelectItem>
-                                    <SelectItem value="Field 3">Field 3</SelectItem>
-                                </SelectContent>
-                            </Select>
+                            <label className="text-sm font-semibold text-slate-700">Variety <span className="text-red-500">*</span></label>
+                            <Input className="rounded-xl border-gray-200" value={formData.variety} onChange={(e) => setFormData({ ...formData, variety: e.target.value })} placeholder="e.g. Blue Dream" />
                         </div>
                         <div className="grid gap-2">
-                            <label className="text-sm font-medium">Variety <span className="text-red-500">*</span></label>
-                            <Input value={formData.variety} onChange={(e) => setFormData({ ...formData, variety: e.target.value })} placeholder="e.g. Blue Dream" />
+                            <label className="text-sm font-semibold text-slate-700">No. of Plants <span className="text-red-500">*</span></label>
+                            <Input type="number" min="1" className="rounded-xl border-gray-200" value={formData.number_of_plants} onChange={(e) => setFormData({ ...formData, number_of_plants: e.target.value })} placeholder="e.g. 50" />
                         </div>
                         <div className="grid gap-2">
-                            <label className="text-sm font-medium">No. of Plants <span className="text-red-500">*</span></label>
-                            <Input type="number" min="1" value={formData.number_of_plants} onChange={(e) => setFormData({ ...formData, number_of_plants: e.target.value })} />
+                            <label className="text-sm font-semibold text-slate-700">Field <span className="text-red-500">*</span></label>
+                            <Input
+                                list="transplant-fields"
+                                className="rounded-xl border-gray-200"
+                                value={formData.field}
+                                onChange={(e) => setFormData({ ...formData, field: e.target.value })}
+                                placeholder="e.g. Field 1, Greenhouse"
+                            />
+                            <datalist id="transplant-fields">
+                                <option value="Field 1" />
+                                <option value="Field 2" />
+                                <option value="Field 3" />
+                                <option value="Greenhouse" />
+                            </datalist>
                         </div>
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
-                        <Button onClick={handleSave} disabled={loading} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                        <Button variant="outline" className="rounded-xl font-semibold text-slate-600" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={handleSave} disabled={loading} className="bg-[#0fa968] hover:bg-emerald-700 text-white rounded-xl shadow-sm px-6 font-semibold">
                             {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                             Save Record
                         </Button>
@@ -279,16 +300,16 @@ export function TransplantingRecords() {
             </Dialog>
 
             <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[425px] rounded-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-red-600">Confirm Deletion</DialogTitle>
-                        <DialogDescription>
+                        <DialogTitle className="text-red-600 font-bold">Confirm Deletion</DialogTitle>
+                        <DialogDescription className="text-slate-600">
                             Are you sure you want to delete this transplanting record? This action cannot be undone.
                         </DialogDescription>
                     </DialogHeader>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
-                        <Button variant="destructive" onClick={handleDelete} disabled={loading}>
+                    <DialogFooter className="mt-4">
+                        <Button variant="outline" className="rounded-xl font-semibold" onClick={() => setIsDeleteDialogOpen(false)}>Cancel</Button>
+                        <Button variant="destructive" className="rounded-xl font-semibold px-6" onClick={handleDelete} disabled={loading}>
                             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Delete
                         </Button>

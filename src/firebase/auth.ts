@@ -8,6 +8,8 @@ import {
     signInWithPopup,
     signInWithRedirect,
     getRedirectResult,
+    updateProfile,
+    updatePassword,
     User
 } from 'firebase/auth';
 
@@ -24,7 +26,18 @@ export {
     GoogleAuthProvider,
     signInWithPopup,
     signInWithRedirect,
-    getRedirectResult
+    getRedirectResult,
+    updateProfile,
+    updatePassword
 };
 
-export type FirebaseUser = User;
+export type FirebaseUser = User & {
+    id?: string;
+    user_metadata?: {
+        name?: string;
+        avatar_url?: string;
+        phone?: string;
+        location?: string;
+        [key: string]: any;
+    };
+};

@@ -16,16 +16,13 @@ export const getSensorReadingsTool = new DynamicStructuredTool({
             const zonesSnap = await db.collection('Zone').get();
             const zonesMap = new Map(zonesSnap.docs.map(d => [d.id, d.data().name]));
 
-            let output = [];
+            const output = [];
             for (const doc of sensorsSnap.docs) {
                 const s = doc.data();
                 const zName = zonesMap.get(s.zoneId) || 'Unknown Zone';
 
                 if (zoneName && !zName.toLowerCase().includes(zoneName.toLowerCase())) continue;
 
-                // For Firebase schema, we might not have 'readings' linked, so we just use current state if cached, 
-                // or say reading is assumed from latest payload.
-                // Assuming physical sensors write their latest reading to their own document (e.g. currentTemp)
                 const val = s.currentTemp ? `Temp: ${s.currentTemp}°C, Hum: ${s.currentHum}%, Moist: ${s.currentMoist}%` : 'Readings processing';
                 output.push(`Sensor: ${s.name} [${s.type}] in Zone: ${zName} -> ${val} (Status: ${s.status})`);
             }
@@ -49,19 +46,19 @@ export const getEquipmentStatusTool = new DynamicStructuredTool({
             const zonesSnap = await db.collection('Zone').get();
             const zonesMap = new Map(zonesSnap.docs.map(d => [d.id, d.data().name]));
 
-            let output: string[] = [];
+            const output: string[] = [];
             fansSnap.docs.forEach(doc => {
                 const f = doc.data();
                 const zName = zonesMap.get(f.zoneId) || 'Unknown';
                 if (!zoneName || zName.toLowerCase().includes(zoneName.toLowerCase())) {
-                    output.push(`Fan: ${f.name} in Zone: ${zName} is ${f.status} (Mode: ${f.mode})`);
+                    output.push(`Fan: ${f.name} in Zone: ${zName} is ${f.status} (Mode: ${f.mode || f.controlMode || 'AUTOMATIC'})`);
                 }
             });
             coolersSnap.docs.forEach(doc => {
                 const c = doc.data();
                 const zName = zonesMap.get(c.zoneId) || 'Unknown';
                 if (!zoneName || zName.toLowerCase().includes(zoneName.toLowerCase())) {
-                    output.push(`Cooler: ${c.name} in Zone: ${zName} is ${c.status} (Mode: ${c.mode})`);
+                    output.push(`Cooler: ${c.name} in Zone: ${zName} is ${c.status} (Mode: ${c.mode || c.controlMode || 'AUTOMATIC'})`);
                 }
             });
 
@@ -101,8 +98,8 @@ export const getCultivationBatchTool = new DynamicStructuredTool({
     schema: z.object({}),
     func: async () => {
         try {
-            const batchesSnap = await db.collection('CropBatch').where('status', '==', 'ACTIVE').get();
-            if (batchesSnap.empty) return 'No active cultivation batches currently.';
+            const batchesSnap = await db.collection('CropBatch').get();
+            if (batchesSnap.empty) return 'No cultivation batches currently.';
             const zonesSnap = await db.collection('Zone').get();
             const zonesMap = new Map(zonesSnap.docs.map(d => [d.id, d.data().name]));
 
@@ -117,9 +114,117 @@ export const getCultivationBatchTool = new DynamicStructuredTool({
     },
 });
 
+export const getFarmLifecycleRecordsTool = new DynamicStructuredTool({
+    name: 'get_farm_lifecycle_records',
+    description: 'Retrieves Farm Data lifecycle records from Firebase Firestore across Planting (Seeds, Clones, Transplanting), Vegetative (Topping/Pruning, Discarded), Pre_Harvest, Post_Harvest, and Storage & Packaging stages.',
+    schema: z.object({
+        stage: z.enum([
+            'ALL',
+            'SEEDS',
+            'CLONES',
+            'TRANSPLANTING',
+            'VEGETATIVE',
+            'DISCARDED',
+            'PRE_HARVEST',
+            'POST_HARVEST',
+            'STORAGE_PACKAGING'
+        ]).optional().default('ALL').describe('The lifecycle stage to query.'),
+        limit: z.number().optional().default(10).describe('Max records per stage.')
+    }),
+    func: async ({ stage, limit }) => {
+        try {
+            const sections: string[] = [];
+
+            if (stage === 'ALL' || stage === 'SEEDS') {
+                const snap = await db.collection('SeedRecord').limit(limit).get();
+                if (!snap.empty) {
+                    sections.push('--- Planting: 1. Seeds ---\n' + snap.docs.map(d => {
+                        const r = d.data();
+                        return `Date: ${r.date}, Variety: ${r.variety}, No. of Seeds: ${r.number_of_seeds}, Planted: ${r.planted_quantity}`;
+                    }).join('\n'));
+                }
+            }
+
+            if (stage === 'ALL' || stage === 'CLONES') {
+                const snap = await db.collection('CloningRecord').limit(limit).get();
+                if (!snap.empty) {
+                    sections.push('--- Planting: 2. Clones ---\n' + snap.docs.map(d => {
+                        const r = d.data();
+                        return `Date: ${r.date}, Variety: ${r.variety}, No. of Clones: ${r.number_of_clones}, Planted: ${r.planted_quantity}`;
+                    }).join('\n'));
+                }
+            }
+
+            if (stage === 'ALL' || stage === 'TRANSPLANTING') {
+                const snap = await db.collection('TransplantingRecord').limit(limit).get();
+                if (!snap.empty) {
+                    sections.push('--- Transplanting ---\n' + snap.docs.map(d => {
+                        const r = d.data();
+                        return `Date: ${r.date}, Variety: ${r.variety}, No. of Plants: ${r.number_of_plants}, Field: ${r.field}`;
+                    }).join('\n'));
+                }
+            }
+
+            if (stage === 'ALL' || stage === 'VEGETATIVE') {
+                const snap = await db.collection('VegetativeRecord').limit(limit).get();
+                if (!snap.empty) {
+                    sections.push('--- Vegetative (Topping & Pruning) ---\n' + snap.docs.map(d => {
+                        const r = d.data();
+                        return `Topping Date: ${r.toppingDate}, Pruning Date: ${r.pruningDate}`;
+                    }).join('\n'));
+                }
+            }
+
+            if (stage === 'ALL' || stage === 'DISCARDED') {
+                const snap = await db.collection('DiscardedRecord').limit(limit).get();
+                if (!snap.empty) {
+                    sections.push('--- Vegetative (Discarded) ---\n' + snap.docs.map(d => {
+                        const r = d.data();
+                        return `Date: ${r.date}, Variety: ${r.variety}, Field: ${r.field}, Reason: ${r.reason}`;
+                    }).join('\n'));
+                }
+            }
+
+            if (stage === 'ALL' || stage === 'PRE_HARVEST') {
+                const snap = await db.collection('PreHarvestRecord').limit(limit).get();
+                if (!snap.empty) {
+                    sections.push('--- Pre_Harvest ---\n' + snap.docs.map(d => {
+                        const r = d.data();
+                        return `Date: ${r.date}, Batch: ${r.batch}, Strain: ${r.strain}, Fresh Weight: ${r.freshWeight}kg, Field: ${r.field}`;
+                    }).join('\n'));
+                }
+            }
+
+            if (stage === 'ALL' || stage === 'POST_HARVEST') {
+                const snap = await db.collection('PostHarvestRecord').limit(limit).get();
+                if (!snap.empty) {
+                    sections.push('--- Post_Harvest ---\n' + snap.docs.map(d => {
+                        const r = d.data();
+                        return `Date: ${r.date}, Batch: ${r.batch}, Strain: ${r.strain}, Dry Wt Before Trimming: ${r.dryWeightBeforeTrimming}kg, Dry Wt After Trimming: ${r.dryWeightAfterTrimming}kg`;
+                    }).join('\n'));
+                }
+            }
+
+            if (stage === 'ALL' || stage === 'STORAGE_PACKAGING') {
+                const snap = await db.collection('StoragePackagingRecord').limit(limit).get();
+                if (!snap.empty) {
+                    sections.push('--- Storage & Packaging ---\n' + snap.docs.map(d => {
+                        const r = d.data();
+                        return `Date: ${r.date}, Variety: ${r.variety}, Quantity: ${r.quantity}`;
+                    }).join('\n'));
+                }
+            }
+
+            return sections.length > 0 ? sections.join('\n\n') : 'No farm lifecycle records found for the requested stage.';
+        } catch (e: any) {
+            return `Error fetching farm lifecycle records: ${e.message}`;
+        }
+    },
+});
+
 export const getOfflineSensorsTool = new DynamicStructuredTool({
     name: 'get_offline_sensors',
-    description: 'Retrieves a list of all offline or disconnected sensors across the farm. A sensor is offline if its status is OFFLINE or it has missed 5 consecutive heartbeats based on its sampling rate.',
+    description: 'Retrieves a list of all offline or disconnected sensors across the farm.',
     schema: z.object({}),
     func: async () => {
         try {
@@ -130,7 +235,7 @@ export const getOfflineSensorsTool = new DynamicStructuredTool({
             const zonesMap = new Map(zonesSnap.docs.map(d => [d.id, d.data().name]));
 
             const now = new Date().getTime();
-            let offline: any[] = [];
+            const offline: any[] = [];
             sensorsSnap.docs.forEach(doc => {
                 const s = doc.data();
                 if (s.status === 'OFFLINE') {
@@ -238,6 +343,7 @@ export const aiTools = [
     getEquipmentStatusTool,
     getActiveAlertsTool,
     getCultivationBatchTool,
+    getFarmLifecycleRecordsTool,
     getOfflineSensorsTool,
     getSensorHistoryTool,
     getOfflineDevicesTool,

@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "../ui/dialog";
-import { Search, Plus, Loader2, Edit2, Trash2, Sprout, ClipboardList } from "lucide-react";
+import { Search, Plus, Loader2, Edit2, Trash2, Sprout, ClipboardList, QrCode } from "lucide-react";
 import { supabase, DbCloningRecord } from "../../../lib/supabase";
 import { toast } from "sonner";
 import { useAuth } from "../../components/AuthProvider";
@@ -202,6 +203,12 @@ export function CloningRecords() {
                                     className="pl-9 bg-gray-50 border-gray-200 focus-visible:ring-emerald-500 rounded-xl"
                                 />
                             </div>
+                            <Button asChild variant="outline" className="border-purple-600 text-purple-700 hover:bg-purple-50 rounded-xl shrink-0 font-semibold">
+                                <Link to="/app/plants">
+                                    <QrCode className="w-4 h-4 mr-2" />
+                                    Mother & Sub-QR Clones
+                                </Link>
+                            </Button>
                             <Button onClick={openNew} className="shrink-0 bg-[#0fa968] hover:bg-emerald-700 text-white rounded-xl shadow-sm px-5 font-semibold">
                                 <Plus className="w-4 h-4 mr-2" />
                                 New Record

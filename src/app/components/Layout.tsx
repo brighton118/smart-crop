@@ -14,7 +14,7 @@ import {
   LogOut,
   User,
   ClipboardList,
-  Wind
+  QrCode
 } from "lucide-react";
 import { AiFloatingButton } from "./AiFloatingButton";
 
@@ -33,8 +33,8 @@ export function Layout() {
 
   const navItems = [
     { path: "/app", icon: LayoutDashboard, label: "Dashboard" },
-    { path: "/app/dryers", icon: Wind, label: "Dryers" },
     { path: "/app/records", icon: ClipboardList, label: "Farm Data" },
+    { path: "/app/plants", icon: QrCode, label: "Plant QR Tracking" },
     { path: "/app/data-analytics", icon: BarChart3, label: "Data & Analytics" },
     { path: "/app/alerts", icon: Bell, label: "Alerts" },
     { path: "/app/settings", icon: Settings, label: "Settings" },

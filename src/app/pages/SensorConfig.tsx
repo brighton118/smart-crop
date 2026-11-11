@@ -77,7 +77,7 @@ export function SensorConfig() {
   useEffect(() => {
     if (!user) return;
     async function loadData() {
-      const data = await getOrCreateDefaultFarm(user!.id);
+      const data = await getOrCreateDefaultFarm(user!.uid || user!.id!);
       if (data) {
         setZones(data.zones);
         setForm(prev => ({ ...prev, zoneId: data.zone.id }));

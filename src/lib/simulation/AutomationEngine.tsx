@@ -199,7 +199,7 @@ export function AutomationProvider({ children }: { children: React.ReactNode }) 
         const resolvedRelay = connection.relayModuleId;
         const resolvedRelayName = resolvedRelay ? relayModules.find(r => r.id === resolvedRelay)?.name : 'Onboard Relay';
 
-        console.log(`[TOPOLOGY TRACE SUCCESS] Validated command path: DRYER (${equipment.zoneId}) -> ESP32 (${resolvedESP32}) -> RELAY (${resolvedRelayName} CH ${connection.relayChannel}) -> ${type.toUpperCase()} (${equipment.name})`);
+        console.log(`[TOPOLOGY TRACE SUCCESS] Validated command path: ZONE (${equipment.zoneId}) -> ESP32 (${resolvedESP32}) -> RELAY (${resolvedRelayName} CH ${connection.relayChannel}) -> ${type.toUpperCase()} (${equipment.name})`);
 
         // Step 2: Simulate Command Send to ESP32 Mapping (Wait Random MS)
         setTimeout(async () => {

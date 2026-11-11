@@ -23,7 +23,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
+      if (firebaseUser) {
+        const enrichedUser = Object.assign(firebaseUser, {
+          id: firebaseUser.uid,
+          user_metadata: {
+            name: firebaseUser.displayName || firebaseUser.email?.split("@")[0] || "Farmer",
+            avatar_url: firebaseUser.photoURL || "",
+          },
+        }) as FirebaseUser;
+        setUser(enrichedUser);
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
 
@@ -46,4 +57,3 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   return useContext(AuthContext);
 }
-

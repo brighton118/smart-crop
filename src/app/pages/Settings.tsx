@@ -88,7 +88,7 @@ export function Settings() {
     // Load Farm Data
     async function loadFarm() {
       setLoading(true);
-      const data = await getOrCreateDefaultFarm(user!.id);
+      const data = await getOrCreateDefaultFarm(user!.uid || user!.id!);
       if (data) {
         setFarm(data.farm);
         setFarmName(data.farm.name);

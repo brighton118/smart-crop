@@ -23,6 +23,6 @@
     },
     "functions": {
         "source": "backend",
-        "runtime": "nodejs20"
+        "runtime": "nodejs22"
     }
 }

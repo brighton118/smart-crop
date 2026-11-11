@@ -1,3 +1,20 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  nav, aside, header, .print\\:hidden, [role="navigation"], button, .ai-floating-btn {
+    display: none !important;
+  }
+  @page {
+    size: auto;
+    margin: 8mm;
+  }
+}
+
